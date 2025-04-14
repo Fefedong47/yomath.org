@@ -103,6 +103,7 @@ button:hover {
   z-index: 999;
   color: white;
   font-family: 'Georgia', serif;
+  transition: transform 0.3s ease;
 }
 
 #chatHeader {
