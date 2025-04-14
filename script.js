@@ -1,5 +1,14 @@
-let salesCount = 0; // Tracks how many times the drug has been sold
-let isWalterWhite = false; // Tracks if Walter White should respond
+let score = 0;
+let autoClick = 0;
+let lastTimestamp = Date.now();
+
+const upgrades = [
+  { name: "Heroin", cost: 200, bonus: 1, increaseFactor: 1.5 },
+  { name: "Crystal Meth", cost: 200, bonus: 1, increaseFactor: 1.5 },
+  { name: "Cocaine", cost: 200, bonus: 1, increaseFactor: 1.5 }
+];
+
+let scoreDisplay, head, resetBtn, notEnoughPoints;
 
 window.onload = () => {
   scoreDisplay = document.getElementById("score");
@@ -15,11 +24,12 @@ window.onload = () => {
   gameLoop();
   updateUpgradeButtonStates();
 
-  // Add event listener to handle Enter key press
+  // Add Event Listener for Enter key on chat input
   const chatInput = document.getElementById("chatInput");
-  chatInput.addEventListener("keydown", (e) => {
-    if (e.key === "Enter") {
-      sendMessage();
+  chatInput.addEventListener("keydown", function(event) {
+    if (event.key === "Enter") {
+      event.preventDefault();  // Prevent the default action (like form submission)
+      sendMessage();  // Call the sendMessage function when Enter is pressed
     }
   });
 };
@@ -35,6 +45,60 @@ function gameLoop() {
   requestAnimationFrame(gameLoop);
 }
 
+function buyUpgrade(index) {
+  const upgrade = upgrades[index];
+  if (score >= upgrade.cost) {
+    score -= upgrade.cost;
+    autoClick += upgrade.bonus;
+    upgrade.cost = Math.floor(upgrade.cost * upgrade.increaseFactor);
+    upgrade.bonus = Math.floor(upgrade.bonus * upgrade.increaseFactor);
+    document.querySelectorAll(".upgrade button")[index].textContent =
+      `Sell ${upgrade.name}, ${upgrade.cost} Yo Points`;
+    updateScore();
+  } else {
+    notEnoughPoints.style.display = "block";
+    setTimeout(() => {
+      notEnoughPoints.style.display = "none";
+    }, 2000);
+  }
+
+  if (score >= 9999) {
+    resetBtn.style.display = "inline-block";
+  }
+}
+
+function resetGame() {
+  score = 0;
+  autoClick = 0;
+  lastTimestamp = Date.now();
+  upgrades.forEach((u, i) => {
+    u.cost = 200;
+    u.bonus = 1;
+    document.querySelectorAll(".upgrade button")[i].textContent =
+      `Sell ${u.name}, ${u.cost} Yo Points`;
+  });
+  resetBtn.style.display = "none";
+  updateScore();
+}
+
+function updateScore() {
+  scoreDisplay.textContent = Math.floor(score);
+  updateUpgradeButtonStates();
+}
+
+function updateUpgradeButtonStates() {
+  const buttons = document.querySelectorAll(".upgrade button");
+  upgrades.forEach((upgrade, index) => {
+    const button = buttons[index];
+    if (score >= upgrade.cost) {
+      button.style.backgroundColor = "green";
+    } else {
+      button.style.backgroundColor = "#333";
+    }
+  });
+}
+
+// Chat Function
 function sendMessage() {
   const input = document.getElementById("chatInput");
   const msg = input.value.trim().toLowerCase();
@@ -44,16 +108,6 @@ function sendMessage() {
   const messageElem = document.createElement("div");
   messageElem.textContent = `You: ${input.value}`;
   chatBox.appendChild(messageElem);
-
-  // Increase sales count for each drug-related message
-  if (msg.includes("sell") || msg.includes("drugs")) {
-    salesCount++;
-  }
-
-  // Check if 20 sales have been reached
-  if (salesCount >= 20 && !isWalterWhite) {
-    switchToWalterWhite();
-  }
 
   const responses = [
     { keyword: "cook", response: "Yeah science, bitch!" },
@@ -101,41 +155,3 @@ function sendMessage() {
   input.value = "";
   chatBox.scrollTop = chatBox.scrollHeight;
 }
-
-function switchToWalterWhite() {
-  // Change to Walter White's responses
-  isWalterWhite = true;
-  const chatHeader = document.getElementById("chatHeader");
-  chatHeader.textContent = "Chat with Walter White";
-
-  const responses = [
-    { keyword: "cook", response: "Say my name!" },
-    { keyword: "mr. white", response: "I am the danger." },
-    { keyword: "meth", response: "I’m not in the meth business. I’m in the empire business." },
-    { keyword: "drugs", response: "We’re in the business of making money." },
-    { keyword: "yo", response: "I am not your friend, Jesse!" },
-    { keyword: "hi", response: "Hello, Jesse." },
-    { keyword: "hello", response: "Get to the point, Jesse." },
-    { keyword: "bitch", response: "Don’t ever call me that again." },
-    { keyword: "how are you", response: "I’m fine. Just... busy." },
-    { keyword: "jesse", response: "He’s a liability, but a necessary one." }
-  ];
-}
-
-function updateScore() {
-  scoreDisplay.textContent = Math.floor(score);
-  updateUpgradeButtonStates();
-}
-
-function updateUpgradeButtonStates() {
-  const buttons = document.querySelectorAll(".upgrade button");
-  upgrades.forEach((upgrade, index) => {
-    const button = buttons[index];
-    if (score >= upgrade.cost) {
-      button.style.backgroundColor = "green";
-    } else {
-      button.style.backgroundColor = "#333";
-    }
-  });
-}
-
