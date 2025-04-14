@@ -180,7 +180,7 @@
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": "Bearer YOUR_OPENAI_API_KEY_HERE" // Replace with your key
+          "Authorization": "" // Replace with your key
         },
         body: JSON.stringify({
           model: "gpt-3.5-turbo",
