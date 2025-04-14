@@ -114,7 +114,7 @@ function sendMessage() {
     { keyword: "mr. white", response: "He’s the danger, yo!" },
     { keyword: "meth", response: "Tight tight tight!" },
     { keyword: "drugs", response: "This ain’t a game, man!" },
-    { keyword: "yo", response: "Yo yo yo! 1-4-8, 3-to-the-3-to-the-6-to-the-9!" },
+    { keyword: "\\byo\\b", response: "Yo yo yo! 1-4-8, 3-to-the-3-to-the-6-to-the-9!" },  // Only 'yo' as a whole word
     { keyword: "hi", response: "What up, dawg?" },
     { keyword: "hello", response: "Yo, sup?" },
     { keyword: "bitch", response: "BITCH!" },
@@ -137,8 +137,10 @@ function sendMessage() {
 
   let jesseReply = defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
 
+  // Check for matching responses using regular expressions
   for (const pair of responses) {
-    if (msg.includes(pair.keyword)) {
+    const regex = new RegExp(pair.keyword, "i");  // 'i' for case insensitive matching
+    if (regex.test(msg)) {
       jesseReply = pair.response;
       break;
     }
