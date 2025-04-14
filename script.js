@@ -92,33 +92,48 @@ function updateUpgradeButtonStates() {
 // Chat Function
 function sendMessage() {
   const input = document.getElementById("chatInput");
-  const msg = input.value.trim();
+  const msg = input.value.trim().toLowerCase();
   if (msg === "") return;
 
   const chatBox = document.getElementById("chatMessages");
   const messageElem = document.createElement("div");
-  messageElem.textContent = `You: ${msg}`;
+  messageElem.textContent = `You: ${input.value}`;
   chatBox.appendChild(messageElem);
 
-  // Jesse-style responses
-  const jesseResponses = [
-    "Yo, science, bitch!",
-    "Yeah Mr. White! Yeah, science!",
-    "You ever try makin' meth in an RV, bitch?",
-    "Seriously? That's whack, man.",
-    "Whatever, yo.",
-    "You think you're the danger? Nah, that's Mr. White.",
-    "This is my own private domicile and I will not be harassed, bitch!",
-    "Like... what even is that, yo?",
-    "Ain’t no one gonna knock me down.",
-    "I'm not a criminal, I'm a blowfish!",
-    "What up, dawg?",
-    "Yo, you talk too much, man.",
-    "Say my name... Wait, no, wrong guy."
+  const responses = [
+    { keyword: "cook", response: "Yeah science, bitch!" },
+    { keyword: "mr. white", response: "He’s the danger, yo!" },
+    { keyword: "meth", response: "Tight tight tight!" },
+    { keyword: "drugs", response: "This ain’t a game, man!" },
+    { keyword: "yo", response: "Yo yo yo! 1-4-8, 3-to-the-3-to-the-6-to-the-9!" },
+    { keyword: "hi", response: "What up, dawg?" },
+    { keyword: "hello", response: "Yo, sup?" },
+    { keyword: "bitch", response: "BITCH!" },
+    { keyword: "how are you", response: "Alive, yo. What else matters?" },
+    { keyword: "jesse", response: "That’s me, bitch!" }
   ];
 
-  const randomIndex = Math.floor(Math.random() * jesseResponses.length);
-  const jesseReply = jesseResponses[randomIndex];
+  // Default fallback responses
+  const defaultResponses = [
+    "Yo, you trippin'?",
+    "I'm not the guy, yo. Mr. White is.",
+    "For real?",
+    "This ain't it, man.",
+    "You ever seen a guy overdose on his own BS?",
+    "Wanna cook or what?",
+    "Say it louder, I dare you.",
+    "Why you always askin' stuff, huh?",
+    "I got somethin' better to do, yo."
+  ];
+
+  let jesseReply = defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
+
+  for (const pair of responses) {
+    if (msg.includes(pair.keyword)) {
+      jesseReply = pair.response;
+      break;
+    }
+  }
 
   setTimeout(() => {
     const reply = document.createElement("div");
@@ -130,4 +145,6 @@ function sendMessage() {
 
   input.value = "";
   chatBox.scrollTop = chatBox.scrollHeight;
+}
+
 }
