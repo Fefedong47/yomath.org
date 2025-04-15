@@ -106,54 +106,13 @@ function sendMessage() {
 
   const chatBox = document.getElementById("chatMessages");
   const messageElem = document.createElement("div");
-  messageElem.textContent = `You: ${input.value}`;
+  messageElem.textContent = msg;
   chatBox.appendChild(messageElem);
-
-  const responses = [
-    { keyword: "cook", response: "Yeah science, bitch!" },
-    { keyword: "mr. white", response: "He’s the danger, yo!" },
-    { keyword: "meth", response: "Tight tight tight!" },
-    { keyword: "drugs", response: "This ain’t a game, man!" },
-    { keyword: "\\byo\\b", response: "Yo yo yo! 1-4-8, 3-to-the-3-to-the-6-to-the-9!" },  // Only 'yo' as a whole word
-    { keyword: "hi", response: "What up, dawg?" },
-    { keyword: "hello", response: "Yo, sup?" },
-    { keyword: "bitch", response: "BITCH!" },
-    { keyword: "how are you", response: "Alive, yo. What else matters?" },
-    { keyword: "jesse", response: "That’s me, bitch!" }
-  ];
-
-  // Default fallback responses
-  const defaultResponses = [
-    "Yo, you trippin'?",
-    "I'm not the guy, yo. Mr. White is.",
-    "For real?",
-    "This ain't it, man.",
-    "You ever seen a guy overdose on his own BS?",
-    "Wanna cook or what?",
-    "Say it louder, I dare you.",
-    "Why you always askin' stuff, huh?",
-    "I got somethin' better to do, yo."
-  ];
-
-  let jesseReply = defaultResponses[Math.floor(Math.random() * defaultResponses.length)];
-
-  // Check for matching responses using regular expressions
-  for (const pair of responses) {
-    const regex = new RegExp(pair.keyword, "i");  // 'i' for case insensitive matching
-    if (regex.test(msg)) {
-      jesseReply = pair.response;
-      break;
-    }
-  }
-
-  setTimeout(() => {
-    const reply = document.createElement("div");
-    reply.textContent = `Jesse: ${jesseReply}`;
-    reply.style.color = "#0ff";
-    chatBox.appendChild(reply);
-    chatBox.scrollTop = chatBox.scrollHeight;
-  }, 1000);
-
   input.value = "";
-  chatBox.scrollTop = chatBox.scrollHeight;
+
+  if (msg.includes("yo")) {
+    const responseElem = document.createElement("div");
+    responseElem.textContent = "Yo, what's up?!";
+    chatBox.appendChild(responseElem);
+  }
 }
