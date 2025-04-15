@@ -2,17 +2,17 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Ordbogen.com</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Jesse Clicker</title>
   <link rel="icon" href="https://plus.ordbogen.com/android-chrome-192x192.png" type="image/x-icon" />
   <style>
     body {
       margin: 0;
       padding: 0;
-      overflow: hidden;
       font-family: 'Georgia', serif;
       text-align: center;
       color: white;
+      background-color: #000;
       position: relative;
     }
 
@@ -68,222 +68,130 @@
       box-shadow: 0 0 10px #ff4c4c;
     }
 
-    .upgrade-info {
-      display: inline-block;
-      margin-right: 15px;
+    #chatContainer {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      padding: 10px;
+      text-align: center;
     }
 
-    #resetBtn {
-      display: none;
-      margin-top: 20px;
-      padding: 12px 24px;
-      font-size: 16px;
-      background-color: #ff4747;
+    #chatBox {
+      max-height: 200px;
+      overflow-y: auto;
+      background: #222;
+      padding: 10px;
       color: white;
-      border: none;
+      text-align: left;
+      margin-bottom: 10px;
       border-radius: 5px;
-      cursor: pointer;
     }
 
-    #resetBtn:hover {
-      background-color: #ff1a1a;
+    #chatInput {
+      width: 70%;
+      padding: 10px;
+      margin: 5px;
     }
 
-    #notEnoughPoints {
-      display: none;
-      font-size: 30px;
-      color: #ff4747;
-      margin-top: 20px;
-      font-weight: bold;
-      text-shadow: 2px 2px 5px #000;
-    }
-
-    iframe {
-      display: none;
+    #chatButton {
+      padding: 10px 15px;
+      font-size: 16px;
+      margin: 5px;
     }
   </style>
 </head>
 <body>
-
   <div class="backdrop"></div>
 
   <h1>Jesse Clicker</h1>
 
-  <img id="head" src="https://i.pinimg.com/736x/26/5d/fe/265dfe8eb04c534f990d78be571c085c.jpg" alt="Jesse Pinkman"/>
+  <img id="head" src="https://i.pinimg.com/736x/26/5d/fe/265dfe8eb04c534f990d78be571c085c.jpg" alt="Jesse Pinkman" />
 
   <div class="score">Yo Points: <span id="score">0</span></div>
 
   <div class="upgrade">
-    <div class="upgrade-info">
-      <button onclick="buyUpgrade(0)">Sell Heroin, 200 Yo Points</button>
-    </div>
-    <div class="upgrade-info">
-      <button onclick="buyUpgrade(1)">Sell Crystal Meth, 200 Yo Points</button>
-    </div>
-    <div class="upgrade-info">
-      <button onclick="buyUpgrade(2)">Sell Cocaine, 200 Yo Points</button>
-    </div>
+    <button onclick="buyUpgrade(0)">Sell Heroin, 200 Yo Points</button>
+    <button onclick="buyUpgrade(1)">Sell Crystal Meth, 200 Yo Points</button>
+    <button onclick="buyUpgrade(2)">Sell Cocaine, 200 Yo Points</button>
   </div>
 
-  <button id="resetBtn" onclick="resetGame()">Reset Game</button>
-
-  <div id="notEnoughPoints">Yo, ya don't got enough Yo Points!</div>
-
-  <audio id="backgroundAudio" autoplay loop>
-    <source src="" type="audio/mp3">
-  </audio>
-
-  <iframe id="soundcloudPlayer" width="0" height="0" scrolling="no" frameborder="no" allow="autoplay"
-    src="">
-  </iframe>
+  <!-- Chat Container -->
+  <div id="chatContainer">
+    <div id="chatBox"></div>
+    <input id="chatInput" type="text" placeholder="Say something to Jesse or Walter..." />
+    <button id="chatButton" onclick="sendMessage()">Send</button>
+  </div>
 
   <script>
     let score = 0;
     let autoClick = 0;
-    let lastTimestamp = Date.now();
-
     const upgrades = [
-      { name: "Heroin", cost: 200, bonus: 1, increaseFactor: 1.5 },
-      { name: "Crystal Meth", cost: 200, bonus: 1, increaseFactor: 1.5 },
-      { name: "Cocaine", cost: 200, bonus: 1, increaseFactor: 1.5 }
+      { name: "Heroin", cost: 200, bonus: 1 },
+      { name: "Crystal Meth", cost: 200, bonus: 2 },
+      { name: "Cocaine", cost: 200, bonus: 3 }
     ];
 
-    let scoreDisplay, head, resetBtn, notEnoughPoints, backgroundAudio, soundcloudPlayer;
-
-    window.onload = () => {
-      scoreDisplay = document.getElementById("score");
-      head = document.getElementById("head");
-      resetBtn = document.getElementById("resetBtn");
-      notEnoughPoints = document.getElementById("notEnoughPoints");
-      backgroundAudio = document.getElementById("backgroundAudio");
-      soundcloudPlayer = document.getElementById("soundcloudPlayer");
-
-      backgroundAudio.volume = 0.5;
-
-      head.onclick = () => {
-        score += 1;
-        updateScore();
-      };
-
-      gameLoop();
-      autoSaveGame();
-
-      backgroundAudio.play().catch(() => {
-        document.body.addEventListener("click", () => backgroundAudio.play(), { once: true });
-      });
-
-      updateUpgradeButtonStates();
-    };
-
-    function gameLoop() {
-      const now = Date.now();
-      const elapsedSeconds = (now - lastTimestamp) / 1000;
-
-      // Only add points if time has passed
-      if (elapsedSeconds >= 1) {
-        score += autoClick * elapsedSeconds;
-        lastTimestamp = now;
-        updateScore();
-      }
-
-      requestAnimationFrame(gameLoop); // This keeps it running smoothly
-    }
-
+    // Game Logic
+    const scoreDisplay = document.getElementById("score");
     function buyUpgrade(index) {
       const upgrade = upgrades[index];
       if (score >= upgrade.cost) {
         score -= upgrade.cost;
         autoClick += upgrade.bonus;
-        upgrade.cost = Math.floor(upgrade.cost * upgrade.increaseFactor);
-        upgrade.bonus = Math.floor(upgrade.bonus * upgrade.increaseFactor);
-
-        document.querySelectorAll(".upgrade button")[index].textContent =
-          `Sell ${upgrade.name}, ${upgrade.cost} Yo Points`;
-
+        upgrade.cost *= 2;
         updateScore();
       } else {
-        notEnoughPoints.style.display = "block";
-        setTimeout(() => {
-          notEnoughPoints.style.display = "none";
-        }, 2000);
+        alert("Yo, you don't have enough Yo Points!");
       }
-
-      if (score >= 9999) {
-        resetBtn.style.display = "inline-block";
-        soundcloudPlayer.style.display = "inline-block";
-      }
-    }
-
-    function resetGame() {
-      score = 0;
-      autoClick = 0;
-      lastTimestamp = Date.now();
-      upgrades.forEach((u, i) => {
-        u.cost = 200;
-        u.bonus = 1;
-        document.querySelectorAll(".upgrade button")[i].textContent =
-          `Sell ${u.name}, ${u.cost} Yo Points`;
-      });
-      resetBtn.style.display = "none";
-      updateScore();
     }
 
     function updateScore() {
-      scoreDisplay.textContent = Math.floor(score);
-      updateUpgradeButtonStates();
+      scoreDisplay.textContent = score;
     }
 
-    function updateUpgradeButtonStates() {
-      const buttons = document.querySelectorAll(".upgrade button");
-      upgrades.forEach((upgrade, index) => {
-        const button = buttons[index];
-        if (score >= upgrade.cost) {
-          button.style.backgroundColor = "green";
-          button.style.color = "white";
-        } else {
-          button.style.backgroundColor = "#333";
-          button.style.color = "white";
-        }
+    // Chat Logic
+    const chatBox = document.getElementById("chatBox");
+    const chatInput = document.getElementById("chatInput");
 
-        <div id="chatContainer">
-  <div id="chatBox">
-    <!-- Messages will appear here -->
-  </div>
-  <input id="chatInput" type="text" placeholder="Say something to Jesse or Walter..." />
-  <button onclick="sendMessage()">Send</button>
-</div>
+    function sendMessage() {
+      const userMessage = chatInput.value.trim();
+      if (!userMessage) return;
 
-<style>
-  #chatContainer {
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-    background: rgba(0, 0, 0, 0.8);
-    padding: 10px;
-    text-align: center;
-  }
-  #chatBox {
-    max-height: 300px;
-    overflow-y: auto;
-    background: #222;
-    padding: 10px;
-    color: white;
-    text-align: left;
-  }
-  #chatInput {
-    width: 80%;
-    padding: 10px;
-    margin: 5px;
-  }
-  button {
-    padding: 10px 15px;
-    font-size: 16px;
-    margin: 5px;
-  }
-</style>
-      });
+      // Display user message
+      addMessage("You", userMessage);
+      chatInput.value = "";
+
+      // Respond from characters
+      const characterResponse = getCharacterResponse(userMessage);
+      setTimeout(() => {
+        addMessage("Jesse/Walter", characterResponse);
+      }, 500);
+    }
+
+    function addMessage(sender, message) {
+      const messageElement = document.createElement("div");
+      messageElement.innerHTML = `<strong>${sender}:</strong> ${message}`;
+      chatBox.appendChild(messageElement);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function getCharacterResponse(message) {
+      const lowerMessage = message.toLowerCase();
+
+      // Jesse-like responses
+      if (lowerMessage.includes("yo")) return "Yo, what up?";
+      if (lowerMessage.includes("meth")) return "Yeah, science!";
+      if (lowerMessage.includes("bitch")) return "Watch it, yo!";
+
+      // Walter-like responses
+      if (lowerMessage.includes("science")) return "You're goddamn right!";
+      if (lowerMessage.includes("money")) return "We need to cook.";
+      if (lowerMessage.includes("danger")) return "I am the danger!";
+
+      // Default response
+      return "I don't know what you're talking about, yo!";
     }
   </script>
-
 </body>
 </html>
