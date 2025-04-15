@@ -244,6 +244,43 @@
           button.style.backgroundColor = "#333";
           button.style.color = "white";
         }
+
+        <div id="chatContainer">
+  <div id="chatBox">
+    <!-- Messages will appear here -->
+  </div>
+  <input id="chatInput" type="text" placeholder="Say something to Jesse or Walter..." />
+  <button onclick="sendMessage()">Send</button>
+</div>
+
+<style>
+  #chatContainer {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 10px;
+    text-align: center;
+  }
+  #chatBox {
+    max-height: 300px;
+    overflow-y: auto;
+    background: #222;
+    padding: 10px;
+    color: white;
+    text-align: left;
+  }
+  #chatInput {
+    width: 80%;
+    padding: 10px;
+    margin: 5px;
+  }
+  button {
+    padding: 10px 15px;
+    font-size: 16px;
+    margin: 5px;
+  }
+</style>
       });
     }
   </script>
