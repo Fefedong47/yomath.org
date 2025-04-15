@@ -3,8 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Jesse Clicker</title>
-  <link rel="icon" href="https://plus.ordbogen.com/android-chrome-192x192.png" type="image/x-icon" />
+  <title>Breaking Bad Chatbot</title>
   <style>
     body {
       margin: 0;
@@ -33,41 +32,6 @@
       margin-bottom: 20px;
     }
 
-    #head {
-      width: 200px;
-      cursor: pointer;
-      transition: transform 0.1s ease;
-      border-radius: 12px;
-      border: 4px solid crimson;
-      box-shadow: 0 0 12px red;
-    }
-
-    .score {
-      font-size: 22px;
-      margin-top: 20px;
-    }
-
-    .upgrade {
-      margin-top: 20px;
-    }
-
-    button {
-      margin: 10px;
-      padding: 12px 24px;
-      font-size: 16px;
-      background-color: #333;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
-    }
-
-    button:hover {
-      background-color: #555;
-      box-shadow: 0 0 10px #ff4c4c;
-    }
-
     #chatContainer {
       position: fixed;
       bottom: 0;
@@ -78,7 +42,7 @@
     }
 
     #chatBox {
-      max-height: 200px;
+      max-height: 300px;
       overflow-y: auto;
       background: #222;
       padding: 10px;
@@ -94,10 +58,19 @@
       margin: 5px;
     }
 
-    #chatButton {
+    button {
       padding: 10px 15px;
       font-size: 16px;
       margin: 5px;
+      background-color: #333;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #555;
     }
 
     #characterSelect {
@@ -110,17 +83,7 @@
 <body>
   <div class="backdrop"></div>
 
-  <h1>Jesse Clicker</h1>
-
-  <img id="head" src="https://i.pinimg.com/736x/26/5d/fe/265dfe8eb04c534f990d78be571c085c.jpg" alt="Jesse Pinkman" />
-
-  <div class="score">Yo Points: <span id="score">0</span></div>
-
-  <div class="upgrade">
-    <button onclick="buyUpgrade(0)">Sell Heroin, 200 Yo Points</button>
-    <button onclick="buyUpgrade(1)">Sell Crystal Meth, 200 Yo Points</button>
-    <button onclick="buyUpgrade(2)">Sell Cocaine, 200 Yo Points</button>
-  </div>
+  <h1>Breaking Bad Chatbot</h1>
 
   <!-- Chat Container -->
   <div id="chatContainer">
@@ -134,45 +97,11 @@
   </div>
 
   <script>
-    let score = 0;
-    let autoClick = 0;
-
-    const upgrades = [
-      { name: "Heroin", cost: 200, bonus: 1 },
-      { name: "Crystal Meth", cost: 200, bonus: 2 },
-      { name: "Cocaine", cost: 200, bonus: 3 }
-    ];
-
-    const scoreDisplay = document.getElementById("score");
-    const head = document.getElementById("head");
-
-    // Click logic for Jesse's head
-    head.onclick = () => {
-      score++;
-      updateScore();
-    };
-
-    function buyUpgrade(index) {
-      const upgrade = upgrades[index];
-      if (score >= upgrade.cost) {
-        score -= upgrade.cost;
-        autoClick += upgrade.bonus;
-        upgrade.cost *= 2;
-        updateScore();
-      } else {
-        alert("Yo, you don't have enough Yo Points!");
-      }
-    }
-
-    function updateScore() {
-      scoreDisplay.textContent = score;
-    }
-
-    // Chat Logic
     const chatBox = document.getElementById("chatBox");
     const chatInput = document.getElementById("chatInput");
     const characterSelect = document.getElementById("characterSelect");
 
+    // Send a message
     function sendMessage() {
       const userMessage = chatInput.value.trim();
       if (!userMessage) return;
@@ -183,12 +112,13 @@
 
       // Respond from selected character
       const selectedCharacter = characterSelect.value;
-      const characterResponse = getCharacterResponse(userMessage, selectedCharacter);
       setTimeout(() => {
-        addMessage(selectedCharacter === "jesse" ? "Jesse" : "Walter", characterResponse);
+        const response = generateResponse(userMessage, selectedCharacter);
+        addMessage(selectedCharacter === "jesse" ? "Jesse" : "Walter", response);
       }, 500);
     }
 
+    // Add a message to the chat
     function addMessage(sender, message) {
       const messageElement = document.createElement("div");
       messageElement.innerHTML = `<strong>${sender}:</strong> ${message}`;
@@ -196,22 +126,37 @@
       chatBox.scrollTop = chatBox.scrollHeight;
     }
 
-    function getCharacterResponse(message, character) {
+    // Generate chatbot response
+    function generateResponse(message, character) {
       const lowerMessage = message.toLowerCase();
 
       if (character === "jesse") {
-        // Jesse-like responses
+        // Jesse's responses
         if (lowerMessage.includes("yo")) return "Yo, what up?";
         if (lowerMessage.includes("meth")) return "Yeah, science!";
         if (lowerMessage.includes("bitch")) return "Watch it, yo!";
-        return "I don't know what you're talking about, yo!";
+        return getRandomResponse([
+          "I don't know what you're talking about, yo!",
+          "Chill, bro.",
+          "Let's cook!",
+        ]);
       } else if (character === "walter") {
-        // Walter-like responses
-        if (lowerMessage.includes("yo")) return "Speak clearly.";
-        if (lowerMessage.includes("meth")) return "We need to cook.";
+        // Walter's responses
+        if (lowerMessage.includes("science")) return "You're goddamn right!";
+        if (lowerMessage.includes("cook")) return "We need to cook.";
         if (lowerMessage.includes("danger")) return "I am the danger!";
-        return "I'm not sure I follow.";
+        return getRandomResponse([
+          "I'm not sure I follow.",
+          "We have work to do.",
+          "Stay out of my territory.",
+        ]);
       }
+    }
+
+    // Get a random response from an array
+    function getRandomResponse(responses) {
+      const randomIndex = Math.floor(Math.random() * responses.length);
+      return responses[randomIndex];
     }
   </script>
 </body>
