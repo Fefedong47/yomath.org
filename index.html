@@ -99,6 +99,12 @@
       font-size: 16px;
       margin: 5px;
     }
+
+    #characterSelect {
+      margin-bottom: 10px;
+      padding: 10px;
+      font-size: 16px;
+    }
   </style>
 </head>
 <body>
@@ -118,22 +124,34 @@
 
   <!-- Chat Container -->
   <div id="chatContainer">
+    <select id="characterSelect">
+      <option value="jesse">Talk to Jesse</option>
+      <option value="walter">Talk to Walter</option>
+    </select>
     <div id="chatBox"></div>
-    <input id="chatInput" type="text" placeholder="Say something to Jesse or Walter..." />
+    <input id="chatInput" type="text" placeholder="Say something..." />
     <button id="chatButton" onclick="sendMessage()">Send</button>
   </div>
 
   <script>
     let score = 0;
     let autoClick = 0;
+
     const upgrades = [
       { name: "Heroin", cost: 200, bonus: 1 },
       { name: "Crystal Meth", cost: 200, bonus: 2 },
       { name: "Cocaine", cost: 200, bonus: 3 }
     ];
 
-    // Game Logic
     const scoreDisplay = document.getElementById("score");
+    const head = document.getElementById("head");
+
+    // Click logic for Jesse's head
+    head.onclick = () => {
+      score++;
+      updateScore();
+    };
+
     function buyUpgrade(index) {
       const upgrade = upgrades[index];
       if (score >= upgrade.cost) {
@@ -153,6 +171,7 @@
     // Chat Logic
     const chatBox = document.getElementById("chatBox");
     const chatInput = document.getElementById("chatInput");
+    const characterSelect = document.getElementById("characterSelect");
 
     function sendMessage() {
       const userMessage = chatInput.value.trim();
@@ -162,10 +181,11 @@
       addMessage("You", userMessage);
       chatInput.value = "";
 
-      // Respond from characters
-      const characterResponse = getCharacterResponse(userMessage);
+      // Respond from selected character
+      const selectedCharacter = characterSelect.value;
+      const characterResponse = getCharacterResponse(userMessage, selectedCharacter);
       setTimeout(() => {
-        addMessage("Jesse/Walter", characterResponse);
+        addMessage(selectedCharacter === "jesse" ? "Jesse" : "Walter", characterResponse);
       }, 500);
     }
 
@@ -176,21 +196,22 @@
       chatBox.scrollTop = chatBox.scrollHeight;
     }
 
-    function getCharacterResponse(message) {
+    function getCharacterResponse(message, character) {
       const lowerMessage = message.toLowerCase();
 
-      // Jesse-like responses
-      if (lowerMessage.includes("yo")) return "Yo, what up?";
-      if (lowerMessage.includes("meth")) return "Yeah, science!";
-      if (lowerMessage.includes("bitch")) return "Watch it, yo!";
-
-      // Walter-like responses
-      if (lowerMessage.includes("science")) return "You're goddamn right!";
-      if (lowerMessage.includes("money")) return "We need to cook.";
-      if (lowerMessage.includes("danger")) return "I am the danger!";
-
-      // Default response
-      return "I don't know what you're talking about, yo!";
+      if (character === "jesse") {
+        // Jesse-like responses
+        if (lowerMessage.includes("yo")) return "Yo, what up?";
+        if (lowerMessage.includes("meth")) return "Yeah, science!";
+        if (lowerMessage.includes("bitch")) return "Watch it, yo!";
+        return "I don't know what you're talking about, yo!";
+      } else if (character === "walter") {
+        // Walter-like responses
+        if (lowerMessage.includes("yo")) return "Speak clearly.";
+        if (lowerMessage.includes("meth")) return "We need to cook.";
+        if (lowerMessage.includes("danger")) return "I am the danger!";
+        return "I'm not sure I follow.";
+      }
     }
   </script>
 </body>
