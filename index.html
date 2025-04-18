@@ -248,6 +248,17 @@
 
   <!-- Firebase Chat (type=module) -->
   <script type="module">
+    // Prompt for username (remember across visits)
+let username = localStorage.getItem('chatUsername');
+
+if (!username) {
+  username = prompt("Enter a username for the chat:");
+  if (!username || username.trim() === "") {
+    username = "Anonymous";
+  }
+  localStorage.setItem('chatUsername', username);
+}
+
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
     import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
