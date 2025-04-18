@@ -283,7 +283,7 @@ if (!username) {
         const text = messageInput.value.trim();
         if (text) {
           await addDoc(collection(db, "messages"), {
-            user: "Anonymous",
+            user: username,
             message: text,
             timestamp: serverTimestamp()
           });
