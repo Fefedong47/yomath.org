@@ -88,7 +88,6 @@
     }
     iframe { display: none; }
 
-    /* Chat Styles */
     #chatContainer {
       position: fixed;
       bottom: 20px;
@@ -159,14 +158,13 @@
   </audio>
   <iframe id="soundcloudPlayer" width="0" height="0" scrolling="no" frameborder="no" allow="autoplay" src=""></iframe>
 
-  <!-- Chat Box UI -->
   <div id="chatContainer">
     <div id="chatHeader">Public Chat</div>
     <div id="chatBox"></div>
     <input id="messageInput" placeholder="Type a message..."/>
   </div>
 
-  <!-- Game Script -->
+  <!-- Game Script with localStorage -->
   <script>
     let score = 0, autoClick = 0, lastTimestamp = Date.now();
     const upgrades = [
@@ -184,12 +182,21 @@
       backgroundAudio = document.getElementById("backgroundAudio");
       soundcloudPlayer = document.getElementById("soundcloudPlayer");
 
+      // Load saved data
+      const savedScore = localStorage.getItem("clickerScore");
+      const savedAutoClick = localStorage.getItem("clickerAutoClick");
+      if (savedScore) score = parseFloat(savedScore);
+      if (savedAutoClick) autoClick = parseFloat(savedAutoClick);
+
+      updateScore();
+
       backgroundAudio.volume = 0.5;
       head.onclick = () => { score += 1; updateScore(); };
       gameLoop();
       backgroundAudio.play().catch(() => {
         document.body.addEventListener("click", () => backgroundAudio.play(), { once: true });
       });
+
       updateUpgradeButtonStates();
     };
 
@@ -230,11 +237,15 @@
         document.querySelectorAll(".upgrade button")[i].textContent = `Sell ${u.name}, ${u.cost} Yo Points`;
       });
       resetBtn.style.display = "none";
+      localStorage.removeItem("clickerScore");
+      localStorage.removeItem("clickerAutoClick");
       updateScore();
     }
 
     function updateScore() {
       scoreDisplay.textContent = Math.floor(score);
+      localStorage.setItem("clickerScore", score);
+      localStorage.setItem("clickerAutoClick", autoClick);
       updateUpgradeButtonStates();
     }
 
@@ -246,23 +257,19 @@
     }
   </script>
 
-  <!-- Firebase Chat (type=module) -->
+  <!-- Chat Code -->
   <script type="module">
-    // Prompt for username (remember across visits)
-let username = localStorage.getItem('chatUsername');
-
-if (!username) {
-  username = prompt("Enter a username for the chat:");
-  if (!username || username.trim() === "") {
-    username = "Anonymous";
-  }
-  localStorage.setItem('chatUsername', username);
-}
+    let username = localStorage.getItem('chatUsername');
+    if (!username) {
+      username = prompt("Enter a username for the chat:");
+      if (!username || username.trim() === "") username = "Anonymous";
+      localStorage.setItem('chatUsername', username);
+    }
 
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
     import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
-        const firebaseConfig = {
+    const firebaseConfig = {
       apiKey: "AIzaSyATfxCXQlXlzDZYVJXbgaLbzSp3v9oltdk",
       authDomain: "yomath-e3bf6.firebaseapp.com",
       projectId: "yomath-e3bf6",
