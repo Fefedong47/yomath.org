@@ -86,6 +86,7 @@
       font-weight: bold;
       text-shadow: 2px 2px 5px #000;
     }
+
     iframe { display: none; }
 
     #chatContainer {
@@ -135,6 +136,17 @@
       font-size: 14px;
       border-top: 2px solid crimson;
     }
+
+    #deleteChatBtn {
+      display: none;
+      background-color: darkred;
+      color: white;
+      width: 100%;
+      padding: 10px;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
@@ -162,9 +174,10 @@
     <div id="chatHeader">Public Chat</div>
     <div id="chatBox"></div>
     <input id="messageInput" placeholder="Type a message..."/>
+    <button id="deleteChatBtn">🗑️ Slet hele chatten</button>
   </div>
 
-  <!-- Game Script with localStorage -->
+  <!-- Spillet -->
   <script>
     let score = 0, autoClick = 0, lastTimestamp = Date.now();
     const upgrades = [
@@ -182,7 +195,6 @@
       backgroundAudio = document.getElementById("backgroundAudio");
       soundcloudPlayer = document.getElementById("soundcloudPlayer");
 
-      // Load saved data
       const savedScore = localStorage.getItem("clickerScore");
       const savedAutoClick = localStorage.getItem("clickerAutoClick");
       if (savedScore) score = parseFloat(savedScore);
@@ -257,17 +269,17 @@
     }
   </script>
 
-  <!-- Chat Code -->
+  <!-- CHAT + ADMIN SLET -->
   <script type="module">
     let username = localStorage.getItem('chatUsername');
     if (!username) {
-      username = prompt("Enter a username for the chat:");
+      username = prompt("Indtast et brugernavn:");
       if (!username || username.trim() === "") username = "Anonymous";
       localStorage.setItem('chatUsername', username);
     }
 
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, onSnapshot, getDocs, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyATfxCXQlXlzDZYVJXbgaLbzSp3v9oltdk",
@@ -284,6 +296,21 @@
 
     const chatBox = document.getElementById('chatBox');
     const messageInput = document.getElementById('messageInput');
+    const deleteBtn = document.getElementById('deleteChatBtn');
+
+    if (username === "admin") {
+      deleteBtn.style.display = "block";
+    }
+
+    deleteBtn.addEventListener("click", async () => {
+      const confirmDelete = confirm("Er du sikker på, at du vil slette hele chatten?");
+      if (!confirmDelete) return;
+      const all = await getDocs(collection(db, "messages"));
+      all.forEach(async (docSnap) => {
+        await deleteDoc(doc(db, "messages", docSnap.id));
+      });
+      alert("Chat slettet.");
+    });
 
     messageInput.addEventListener("keydown", async (e) => {
       if (e.key === "Enter") {
@@ -309,5 +336,6 @@
       chatBox.scrollTop = chatBox.scrollHeight;
     });
   </script>
+
 </body>
 </html>
