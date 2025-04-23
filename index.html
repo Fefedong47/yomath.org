@@ -4,73 +4,84 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Jesse Clicker</title>
+  <link rel="icon" href="https://www.ordbogen.com/apple-touch-icon.png" type="image/x-icon" />
   <style>
     body {
       margin: 0;
-      font-family: 'Georgia', serif;
-      color: white;
-      background: #111;
+      padding: 0;
       overflow-x: hidden;
+      font-family: 'Georgia', serif;
       text-align: center;
+      color: white;
+      background-color: black;
       position: relative;
     }
     .backdrop {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background-image: url('https://static1.srcdn.com/wordpress/wp-content/uploads/2021/10/Breaking-Bad-RV.jpg');
+      background-size: cover;
+      background-position: center;
       z-index: -1;
-      background: url('https://static1.srcdn.com/wordpress/wp-content/uploads/2021/10/Breaking-Bad-RV.jpg') center/cover no-repeat;
     }
-    h1 {
-      font-size: 2.5em;
-      margin: 20px;
-      text-shadow: 2px 2px 6px #000;
-    }
+    h1 { font-size: 2.5em; margin: 20px 0; }
     #head {
       width: 200px;
       cursor: pointer;
-      border: 4px solid crimson;
-      border-radius: 12px;
-      box-shadow: 0 0 12px red;
       transition: transform 0.1s ease;
+      border-radius: 12px;
+      border: 4px solid crimson;
+      box-shadow: 0 0 12px red;
     }
-    #head:active {
-      transform: scale(0.95);
-    }
-    .score {
-      font-size: 22px;
-      margin: 20px 0;
+    .score { font-size: 22px; margin: 20px; }
+    .upgrade { margin: 20px auto; }
+    .upgrade-info {
+      display: inline-block;
+      margin: 10px;
     }
     button {
-      padding: 12px 20px;
-      margin: 10px;
+      padding: 12px 24px;
       font-size: 16px;
       background-color: #333;
       color: white;
       border: none;
-      border-radius: 6px;
+      border-radius: 5px;
       cursor: pointer;
-      transition: 0.2s;
+      transition: background-color 0.3s ease;
     }
     button:hover {
       background-color: #555;
-      box-shadow: 0 0 10px crimson;
+      box-shadow: 0 0 10px #ff4c4c;
+    }
+    #resetBtn, #deleteBtn {
+      margin-top: 20px;
+      background-color: #ff4747;
+    }
+    #resetBtn:hover, #deleteBtn:hover {
+      background-color: #ff1a1a;
+    }
+    #notEnoughPoints {
+      display: none;
+      font-size: 30px;
+      color: #ff4747;
+      margin-top: 20px;
+      font-weight: bold;
     }
     #chatContainer {
       position: fixed;
       bottom: 20px;
       right: 20px;
       width: 300px;
-      background: #1a1a1a;
+      background: rgba(20, 20, 20, 0.95);
       border: 2px solid crimson;
       border-radius: 12px;
       overflow: hidden;
-      z-index: 999;
+      z-index: 10;
     }
     #chatHeader {
       background: crimson;
+      color: white;
       padding: 10px;
       font-weight: bold;
     }
@@ -78,81 +89,84 @@
       height: 200px;
       overflow-y: auto;
       padding: 10px;
+      background-color: #111;
+      text-align: left;
       font-size: 14px;
-      background: #111;
     }
-    #chatBox div {
-      margin-bottom: 6px;
-    }
+    #chatBox div { margin-bottom: 8px; }
     #messageInput {
       width: 100%;
       padding: 10px;
-      background: #222;
-      color: white;
       border: none;
-      outline: none;
-    }
-    #deleteMessagesBtn {
-      display: none;
-      margin-top: 20px;
-      background-color: crimson;
+      background-color: #222;
+      color: white;
+      font-size: 14px;
     }
     #usernameModal {
       position: fixed;
       top: 0; left: 0;
       width: 100vw; height: 100vh;
-      background: rgba(0, 0, 0, 0.95);
+      background: rgba(0, 0, 0, 0.9);
       display: flex;
-      justify-content: center;
       align-items: center;
-      z-index: 10000;
+      justify-content: center;
+      z-index: 1000;
     }
     .modalContent {
-      background: #1a1a1a;
-      padding: 30px;
-      border-radius: 12px;
+      background-color: #111;
       border: 2px solid crimson;
+      border-radius: 12px;
+      padding: 30px;
       text-align: center;
-      width: 300px;
-      box-shadow: 0 0 20px crimson;
     }
     .modalContent input {
-      width: 90%;
-      padding: 10px;
-      margin-top: 10px;
-      font-size: 16px;
-      background: #222;
-      color: white;
+      padding: 12px;
+      width: 80%;
       border: none;
       border-radius: 6px;
+      background-color: #222;
+      color: white;
     }
     .modalContent button {
       margin-top: 15px;
-      background: crimson;
+      padding: 10px 20px;
+      font-size: 16px;
+      background-color: crimson;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
     }
-    #usernameError {
-      color: red;
-      margin-top: 10px;
-    }
+    #usernameError { color: red; margin-top: 10px; }
   </style>
 </head>
 <body>
+
   <div class="backdrop"></div>
   <h1>Jesse Clicker</h1>
-  <img id="head" src="https://i.pinimg.com/736x/26/5d/fe/265dfe8eb04c534f990d78be571c085c.jpg" />
+  <img id="head" src="https://i.pinimg.com/736x/26/5d/fe/265dfe8eb04c534f990d78be571c085c.jpg" alt="Jesse Pinkman"/>
   <div class="score">Yo Points: <span id="score">0</span></div>
+
+  <div class="upgrade">
+    <div class="upgrade-info"><button onclick="buyUpgrade(0)">Sell Heroin (200 Yo Points)</button></div>
+    <div class="upgrade-info"><button onclick="buyUpgrade(1)">Sell Crystal Meth (200 Yo Points)</button></div>
+    <div class="upgrade-info"><button onclick="buyUpgrade(2)">Sell Cocaine (200 Yo Points)</button></div>
+  </div>
+
+  <button id="resetBtn" onclick="resetGame()">Reset Game</button>
+  <button id="deleteBtn" style="display:none;">Delete All Messages</button>
+  <div id="notEnoughPoints">Yo, you don't got enough Yo Points!</div>
 
   <div id="chatContainer">
     <div id="chatHeader">Public Chat</div>
     <div id="chatBox"></div>
     <input id="messageInput" placeholder="Type a message..." />
-    <button id="deleteMessagesBtn">Delete All Messages</button>
   </div>
 
   <div id="usernameModal">
     <div class="modalContent">
-      <h2>Enter Username</h2>
-      <input type="text" id="usernameInput" placeholder="Type name..." />
+      <h2>Enter Your Username</h2>
+      <input type="text" id="usernameInput" />
       <button id="confirmUsername">OK</button>
       <div id="usernameError"></div>
     </div>
@@ -161,17 +175,8 @@
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
     import {
-      getFirestore,
-      collection,
-      addDoc,
-      serverTimestamp,
-      query,
-      orderBy,
-      onSnapshot,
-      getDocs,
-      doc,
-      deleteDoc,
-      setDoc
+      getFirestore, collection, addDoc, serverTimestamp,
+      query, orderBy, onSnapshot, getDocs, doc, deleteDoc, setDoc
     } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
     const firebaseConfig = {
@@ -186,63 +191,55 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const usersRef = collection(db, "users");
-    const messagesRef = collection(db, "messages");
+    const chatRef = collection(db, "messages");
 
-    const chatBox = document.getElementById("chatBox");
-    const messageInput = document.getElementById("messageInput");
-    const deleteBtn = document.getElementById("deleteMessagesBtn");
-    const usernameModal = document.getElementById("usernameModal");
-    const usernameInput = document.getElementById("usernameInput");
-    const confirmBtn = document.getElementById("confirmUsername");
-    const usernameError = document.getElementById("usernameError");
-    const head = document.getElementById("head");
-    const scoreDisplay = document.getElementById("score");
+    const chatBox = document.getElementById('chatBox');
+    const messageInput = document.getElementById('messageInput');
+    const deleteBtn = document.getElementById("deleteBtn");
 
-    let username = "";
-    let score = 0;
-    const adminUsername = "yomathadmin";
+    const adminUsername = "WalterWhite";
+    let username = null;
 
-    confirmBtn.onclick = async () => {
-      const name = usernameInput.value.trim();
-      if (!name) return;
+    document.getElementById("confirmUsername").onclick = async () => {
+      const input = document.getElementById("usernameInput").value.trim();
+      const errorDiv = document.getElementById("usernameError");
 
-      const taken = await getDocs(usersRef);
-      const usernames = taken.docs.map(doc => doc.id);
-
-      if (usernames.includes(name)) {
-        usernameError.textContent = "That name is already taken.";
+      if (!input) {
+        errorDiv.textContent = "Please enter a username.";
         return;
       }
 
-      username = name;
+      const snapshot = await getDocs(usersRef);
+      const taken = snapshot.docs.map(doc => doc.id);
+      if (taken.includes(input)) {
+        errorDiv.textContent = "Username already taken!";
+        return;
+      }
+
+      username = input;
       await setDoc(doc(db, "users", username), { joinedAt: serverTimestamp() });
-      window.addEventListener("beforeunload", () => {
-        deleteDoc(doc(db, "users", username));
+      localStorage.setItem("username", username);
+      document.getElementById("usernameModal").style.display = "none";
+
+      if (username === adminUsername) deleteBtn.style.display = "inline-block";
+
+      window.addEventListener("beforeunload", async () => {
+        await deleteDoc(doc(db, "users", username));
       });
-
-      usernameModal.style.display = "none";
-      if (username === adminUsername) deleteBtn.style.display = "block";
-    };
-
-    head.onclick = () => {
-      score += 1;
-      scoreDisplay.textContent = score;
     };
 
     messageInput.addEventListener("keydown", async (e) => {
-      if (e.key === "Enter") {
-        const text = messageInput.value.trim();
-        if (!text) return;
-        await addDoc(messagesRef, {
+      if (e.key === "Enter" && messageInput.value.trim()) {
+        await addDoc(chatRef, {
           user: username,
-          message: text,
+          message: messageInput.value.trim(),
           timestamp: serverTimestamp()
         });
         messageInput.value = "";
       }
     });
 
-    onSnapshot(query(messagesRef, orderBy("timestamp")), (snapshot) => {
+    onSnapshot(query(chatRef, orderBy("timestamp")), (snapshot) => {
       chatBox.innerHTML = "";
       snapshot.forEach(doc => {
         const msg = doc.data();
@@ -252,14 +249,76 @@
     });
 
     deleteBtn.onclick = async () => {
-      if (username !== adminUsername) return alert("Only the admin can delete messages!");
-      const confirmDelete = confirm("Are you sure you want to delete all messages?");
-      if (!confirmDelete) return;
-      const snapshot = await getDocs(messagesRef);
-      for (const docSnap of snapshot.docs) {
-        await deleteDoc(doc(messagesRef, docSnap.id));
+      if (username !== adminUsername) return;
+      if (confirm("Delete all messages?")) {
+        const allMessages = await getDocs(chatRef);
+        for (const msg of allMessages.docs) {
+          await deleteDoc(msg.ref);
+        }
       }
     };
   </script>
+
+  <script>
+    let score = 0, autoClick = 0, lastTimestamp = Date.now();
+    const scoreDisplay = document.getElementById("score");
+    const head = document.getElementById("head");
+
+    const upgrades = [
+      { name: "Heroin", cost: 200, bonus: 1, increaseFactor: 1.5 },
+      { name: "Crystal Meth", cost: 200, bonus: 2, increaseFactor: 1.5 },
+      { name: "Cocaine", cost: 200, bonus: 3, increaseFactor: 1.5 }
+    ];
+
+    window.onload = () => {
+      const savedScore = localStorage.getItem("clickerScore");
+      const savedAutoClick = localStorage.getItem("clickerAutoClick");
+      if (savedScore) score = parseFloat(savedScore);
+      if (savedAutoClick) autoClick = parseFloat(savedAutoClick);
+      updateScore();
+      head.onclick = () => { score++; updateScore(); };
+      gameLoop();
+    };
+
+    function gameLoop() {
+      const now = Date.now();
+      const elapsed = (now - lastTimestamp) / 1000;
+      if (elapsed >= 1) {
+        score += autoClick * elapsed;
+        lastTimestamp = now;
+        updateScore();
+      }
+      requestAnimationFrame(gameLoop);
+    }
+
+    function updateScore() {
+      scoreDisplay.textContent = Math.floor(score);
+      localStorage.setItem("clickerScore", score);
+      localStorage.setItem("clickerAutoClick", autoClick);
+    }
+
+    function buyUpgrade(i) {
+      const u = upgrades[i];
+      if (score >= u.cost) {
+        score -= u.cost;
+        autoClick += u.bonus;
+        u.cost = Math.floor(u.cost * u.increaseFactor);
+        u.bonus = Math.floor(u.bonus * u.increaseFactor);
+        updateScore();
+      } else {
+        document.getElementById("notEnoughPoints").style.display = "block";
+        setTimeout(() => {
+          document.getElementById("notEnoughPoints").style.display = "none";
+        }, 2000);
+      }
+    }
+
+    function resetGame() {
+      score = 0;
+      autoClick = 0;
+      updateScore();
+    }
+  </script>
+
 </body>
 </html>
