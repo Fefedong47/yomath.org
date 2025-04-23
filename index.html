@@ -226,131 +226,107 @@
   </div>
 
   <!-- Game Script with localStorage -->
-  <script>
-    let score = 0, autoClick = 0, lastTimestamp = Date.now();
-    const upgrades = [
-      { name: "Heroin", cost: 200, bonus: 1, increaseFactor: 1.5 },
-      { name: "Crystal Meth", cost: 200, bonus: 1, increaseFactor: 1.5 },
-      { name: "Cocaine", cost: 200, bonus: 1, increaseFactor: 1.5 }
-    ];
-    let scoreDisplay, head, resetBtn, notEnoughPoints, backgroundAudio, soundcloudPlayer, messageInput;
-    let username = localStorage.getItem("username");
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+    import {
+      getFirestore,
+      collection,
+      addDoc,
+      serverTimestamp,
+      query,
+      orderBy,
+      onSnapshot,
+      getDocs,
+      doc,
+      deleteDoc,
+      setDoc
+    } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
 
-    window.onload = () => {
-      scoreDisplay = document.getElementById("score");
-      head = document.getElementById("head");
-      resetBtn = document.getElementById("resetBtn");
-      notEnoughPoints = document.getElementById("notEnoughPoints");
-      backgroundAudio = document.getElementById("backgroundAudio");
-      soundcloudPlayer = document.getElementById("soundcloudPlayer");
-      messageInput = document.getElementById("messageInput");
-
-      // Check for existing username
-      if (!username) {
-        showUsernameModal();
-      } else {
-        updateScore();
-      }
-
-      backgroundAudio.volume = 0.5;
-      head.onclick = () => { score += 1; updateScore(); };
-      gameLoop();
-      backgroundAudio.play().catch(() => {
-        document.body.addEventListener("click", () => backgroundAudio.play(), { once: true });
-      });
-
-      messageInput.addEventListener("keydown", function(e) {
-        if (e.key === "Enter" && messageInput.value.trim()) {
-          sendMessage(messageInput.value);
-          messageInput.value = "";  // Clear input after sending
-        }
-      });
-
-      updateUpgradeButtonStates();
+    const firebaseConfig = {
+      apiKey: "AIzaSyATfxCXQlXlzDZYVJXbgaLbzSp3v9oltdk",
+      authDomain: "yomath-e3bf6.firebaseapp.com",
+      projectId: "yomath-e3bf6",
+      storageBucket: "omath-e3bf6.firebasestorage.app",
+      messagingSenderId: "828481107544",
+      appId: "1:828481107544:web:f5d42aaa18f7ae15293c2d",
+      measurementId: "G-DS7EDV6X1P"
     };
 
-    function showUsernameModal() {
-      const modal = document.getElementById("usernameModal");
-      modal.style.display = "flex";
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const usersRef = collection(db, "users");
+    const chatBox = document.getElementById('chatBox');
+    const messageInput = document.getElementById('messageInput');
 
-      document.getElementById("confirmUsername").onclick = () => {
-        const usernameInput = document.getElementById("usernameInput").value;
-        if (usernameInput.trim()) {
-          localStorage.setItem("username", usernameInput);
-          username = usernameInput;
-          document.getElementById("usernameModal").style.display = "none";
-          updateScore();
-        } else {
-          document.getElementById("usernameError").textContent = "Indtast venligst et brugernavn!";
-        }
-      };
-    }
+    let username;
+    const adminUsername = "WalterWhite"; // Change this to your admin username
 
-    function sendMessage(message) {
-      const chatBox = document.getElementById("chatBox");
-      const messageElement = document.createElement("div");
-      messageElement.textContent = `${username}: ${message}`;
-      chatBox.appendChild(messageElement);
-      chatBox.scrollTop = chatBox.scrollHeight;  // Auto-scroll to latest message
-    }
+    async function promptForUsername() {
+      let takenUsernames = [];
+      const snapshot = await getDocs(usersRef);
+      snapshot.forEach(doc => takenUsernames.push(doc.id));
 
-    function gameLoop() {
-      const now = Date.now();
-      const elapsed = (now - lastTimestamp) / 1000;
-      if (elapsed >= 1) {
-        score += autoClick * elapsed;
-        lastTimestamp = now;
-        updateScore();
+      while (!username || username.trim() === "" || takenUsernames.includes(username)) {
+        username = prompt(
+          takenUsernames.includes(username)
+            ? "Navnet er allerede i brug. Vælg et andet:"
+            : "Vælg et brugernavn:"
+        );
+        username = username?.trim();
       }
-      requestAnimationFrame(gameLoop);
-    }
 
-    function buyUpgrade(i) {
-      const u = upgrades[i];
-      if (score >= u.cost) {
-        score -= u.cost;
-        autoClick += u.bonus;
-        u.cost = Math.floor(u.cost * u.increaseFactor);
-        u.bonus = Math.floor(u.bonus * u.increaseFactor);
-        updateUpgradeButtonStates();
-        updateScore();
-      } else {
-        notEnoughPoints.style.display = "block";
-        setTimeout(() => {
-          notEnoughPoints.style.display = "none";
-        }, 2000);
-      }
-    }
-
-    function updateScore() {
-      scoreDisplay.textContent = Math.floor(score);
-      localStorage.setItem("clickerScore", score);
-      localStorage.setItem("clickerAutoClick", autoClick);
-    }
-
-    function updateUpgradeButtonStates() {
-      upgrades.forEach((upgrade, index) => {
-        const btn = document.querySelectorAll(".upgrade button")[index];
-        if (score >= upgrade.cost) {
-          btn.disabled = false;
-        } else {
-          btn.disabled = true;
-        }
+      await setDoc(doc(db, "users", username), {
+        joinedAt: serverTimestamp()
       });
+
+      window.addEventListener("beforeunload", async () => {
+        await deleteDoc(doc(db, "users", username));
+      });
+
+      localStorage.setItem("chatUsername", username);
     }
 
-    function resetGame() {
-      localStorage.clear();
-      score = 0;
-      autoClick = 0;
-      updateScore();
-      updateUpgradeButtonStates();
+    await promptForUsername();
+
+    if (username === adminUsername) {
+      document.getElementById("deleteBtn").style.display = "block";
     }
 
-    function deleteMessages() {
-      const chatBox = document.getElementById("chatBox");
+    messageInput.addEventListener("keydown", async (e) => {
+      if (e.key === "Enter") {
+        const text = messageInput.value.trim();
+        if (text) {
+          await addDoc(collection(db, "messages"), {
+            user: username,
+            message: text,
+            timestamp: serverTimestamp()
+          });
+          messageInput.value = "";
+        }
+      }
+    });
+
+    const q = query(collection(db, "messages"), orderBy("timestamp"));
+    onSnapshot(q, (snapshot) => {
       chatBox.innerHTML = "";
-    }
+      snapshot.forEach(doc => {
+        const msg = doc.data();
+        chatBox.innerHTML += `<div><strong>${msg.user}:</strong> ${msg.message}</div>`;
+      });
+      chatBox.scrollTop = chatBox.scrollHeight;
+    });
+
+    window.clearMessages = async function () {
+      if (username !== adminUsername) return;
+
+      const confirmDelete = confirm("Er du sikker på, du vil slette alle beskeder?");
+      if (!confirmDelete) return;
+
+      const messagesSnapshot = await getDocs(collection(db, "messages"));
+      for (const messageDoc of messagesSnapshot.docs) {
+        await deleteDoc(doc(db, "messages", messageDoc.id));
+      }
+    };
   </script>
 </body>
 </html>
