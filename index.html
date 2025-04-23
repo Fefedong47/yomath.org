@@ -12,10 +12,21 @@
       background: #111;
       overflow-x: hidden;
       text-align: center;
+      position: relative;
+    }
+    .backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: -1;
+      background: url('https://static1.srcdn.com/wordpress/wp-content/uploads/2021/10/Breaking-Bad-RV.jpg') center/cover no-repeat;
     }
     h1 {
       font-size: 2.5em;
       margin: 20px;
+      text-shadow: 2px 2px 6px #000;
     }
     #head {
       width: 200px;
@@ -24,6 +35,9 @@
       border-radius: 12px;
       box-shadow: 0 0 12px red;
       transition: transform 0.1s ease;
+    }
+    #head:active {
+      transform: scale(0.95);
     }
     .score {
       font-size: 22px;
@@ -123,6 +137,7 @@
   </style>
 </head>
 <body>
+  <div class="backdrop"></div>
   <h1>Jesse Clicker</h1>
   <img id="head" src="https://i.pinimg.com/736x/26/5d/fe/265dfe8eb04c534f990d78be571c085c.jpg" />
   <div class="score">Yo Points: <span id="score">0</span></div>
@@ -131,13 +146,13 @@
     <div id="chatHeader">Public Chat</div>
     <div id="chatBox"></div>
     <input id="messageInput" placeholder="Type a message..." />
-    <button id="deleteMessagesBtn">Delete Messages</button>
+    <button id="deleteMessagesBtn">Delete All Messages</button>
   </div>
 
   <div id="usernameModal">
     <div class="modalContent">
-      <h2>Indtast brugernavn</h2>
-      <input type="text" id="usernameInput" placeholder="Skriv navn her..." />
+      <h2>Enter Username</h2>
+      <input type="text" id="usernameInput" placeholder="Type name..." />
       <button id="confirmUsername">OK</button>
       <div id="usernameError"></div>
     </div>
@@ -180,9 +195,12 @@
     const usernameInput = document.getElementById("usernameInput");
     const confirmBtn = document.getElementById("confirmUsername");
     const usernameError = document.getElementById("usernameError");
+    const head = document.getElementById("head");
+    const scoreDisplay = document.getElementById("score");
 
     let username = "";
-    const adminUsername = "Yomathadmin";
+    let score = 0;
+    const adminUsername = "WalterWhite";
 
     confirmBtn.onclick = async () => {
       const name = usernameInput.value.trim();
@@ -192,7 +210,7 @@
       const usernames = taken.docs.map(doc => doc.id);
 
       if (usernames.includes(name)) {
-        usernameError.textContent = "Navnet er allerede i brug.";
+        usernameError.textContent = "That name is already taken.";
         return;
       }
 
@@ -204,6 +222,11 @@
 
       usernameModal.style.display = "none";
       if (username === adminUsername) deleteBtn.style.display = "block";
+    };
+
+    head.onclick = () => {
+      score += 1;
+      scoreDisplay.textContent = score;
     };
 
     messageInput.addEventListener("keydown", async (e) => {
@@ -229,8 +252,8 @@
     });
 
     deleteBtn.onclick = async () => {
-      if (username !== adminUsername) return alert("Kun admin kan slette beskeder!");
-      const confirmDelete = confirm("Slet alle beskeder?");
+      if (username !== adminUsername) return alert("Only the admin can delete messages!");
+      const confirmDelete = confirm("Are you sure you want to delete all messages?");
       if (!confirmDelete) return;
       const snapshot = await getDocs(messagesRef);
       for (const docSnap of snapshot.docs) {
@@ -240,4 +263,3 @@
   </script>
 </body>
 </html>
-
