@@ -256,39 +256,33 @@
     const db = getFirestore(app);
     const usersRef = collection(db, "users");
     const messagesRef = collection(db, "messages");
-    const chatBox = document.getElementById('chatBox');
-    const messageInput = document.getElementById('messageInput');
+    const adminUsername = "WalterWhite";
 
-    let username;
-    const adminUsername = "WalterWhite"; // Change this to your admin username
+    const messageInput = document.getElementById("messageInput");
+    const chatBox = document.getElementById("chatBox");
 
-    async function promptForUsername() {
-      let takenUsernames = [];
-      const snapshot = await getDocs(usersRef);
-      snapshot.forEach(doc => takenUsernames.push(doc.id));
+    let username = localStorage.getItem("chatUsername");
 
-      while (!username || username.trim() === "" || takenUsernames.includes(username)) {
-        username = prompt(
-          takenUsernames.includes(username)
-            ? "Navnet er allerede i brug. Vælg et andet:"
-            : "Vælg et brugernavn:"
-        );
-        username = username?.trim();
-      }
-
-      await setDoc(doc(db, "users", username), {
-        joinedAt: serverTimestamp()
+    if (!username) {
+      document.getElementById("usernameModal").style.display = "block";
+      const confirmUsernameButton = document.getElementById("confirmUsername");
+      confirmUsernameButton.addEventListener("click", async () => {
+        const usernameInput = document.getElementById("usernameInput").value;
+        if (usernameInput && usernameInput.trim()) {
+          username = usernameInput.trim();
+          await setDoc(doc(db, "users", username), {
+            joinedAt: serverTimestamp()
+          });
+          localStorage.setItem("chatUsername", username);
+          document.getElementById("usernameModal").style.display = "none";
+        } else {
+          alert("Please enter a valid username.");
+        }
       });
-
-      window.addEventListener("beforeunload", async () => {
-        await deleteDoc(doc(db, "users", username));
-      });
-
-      localStorage.setItem("chatUsername", username);
     }
 
-    await promptForUsername();
-
+    document.getElementById("deleteBtn").style.display = "none";
+    
     if (username === adminUsername) {
       document.getElementById("deleteBtn").style.display = "block";
     }
@@ -317,7 +311,8 @@
       chatBox.scrollTop = chatBox.scrollHeight;
     });
 
-    window.clearMessages = async function () {
+    // Delete Messages Functionality
+    async function clearMessages() {
       if (username !== adminUsername) return;
 
       const confirmDelete = confirm("Er du sikker på, du vil slette alle beskeder?");
@@ -327,13 +322,14 @@
       for (const messageDoc of messagesSnapshot.docs) {
         await deleteDoc(doc(db, "messages", messageDoc.id));
       }
-    };
-    
-    async function deleteMessages() {
+    }
+
+    window.deleteMessages = async function () {
       if (username === adminUsername) {
         await clearMessages();
       }
-    }
+    };
+
   </script>
 </body>
 </html>
