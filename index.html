@@ -4,237 +4,240 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Jesse Clicker</title>
-  <link rel="icon" href="https://www.ordbogen.com/apple-touch-icon.png" type="image/x-icon" />
   <style>
     body {
       margin: 0;
-      padding: 0;
-      overflow-x: hidden;
       font-family: 'Georgia', serif;
-      text-align: center;
       color: white;
-      position: relative;
-    }
-    .backdrop {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background-image: url('https://static1.srcdn.com/wordpress/wp-content/uploads/2021/10/Breaking-Bad-RV.jpg');
-      background-size: cover;
-      background-position: center;
-      z-index: -1;
+      background: #111;
+      overflow-x: hidden;
+      text-align: center;
     }
     h1 {
       font-size: 2.5em;
-      margin-bottom: 20px;
+      margin: 20px;
     }
     #head {
       width: 200px;
       cursor: pointer;
-      transition: transform 0.1s ease;
-      border-radius: 12px;
       border: 4px solid crimson;
+      border-radius: 12px;
       box-shadow: 0 0 12px red;
+      transition: transform 0.1s ease;
     }
     .score {
       font-size: 22px;
-      margin-top: 20px;
-    }
-    .upgrade {
-      margin-top: 20px;
+      margin: 20px 0;
     }
     button {
+      padding: 12px 20px;
       margin: 10px;
-      padding: 12px 24px;
       font-size: 16px;
       background-color: #333;
       color: white;
       border: none;
-      border-radius: 5px;
+      border-radius: 6px;
       cursor: pointer;
-      transition: background-color 0.3s ease;
+      transition: 0.2s;
     }
     button:hover {
       background-color: #555;
-      box-shadow: 0 0 10px #ff4c4c;
+      box-shadow: 0 0 10px crimson;
     }
-    .upgrade-info {
-      display: inline-block;
-      margin-right: 15px;
-    }
-    #resetBtn, #deleteBtn {
-      display: none;
-      margin-top: 20px;
-      padding: 12px 24px;
-      font-size: 16px;
-      background-color: #ff4747;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    #resetBtn:hover, #deleteBtn:hover {
-      background-color: #ff1a1a;
-    }
-    #notEnoughPoints {
-      display: none;
-      font-size: 30px;
-      color: #ff4747;
-      margin-top: 20px;
-      font-weight: bold;
-      text-shadow: 2px 2px 5px #000;
-    }
-    iframe { display: none; }
-
     #chatContainer {
       position: fixed;
       bottom: 20px;
       right: 20px;
       width: 300px;
-      background: rgba(20, 20, 20, 0.95);
+      background: #1a1a1a;
       border: 2px solid crimson;
       border-radius: 12px;
       overflow: hidden;
-      box-shadow: 0 0 15px crimson;
-      z-index: 10;
-      font-family: 'Georgia', serif;
+      z-index: 999;
     }
-
     #chatHeader {
       background: crimson;
-      color: white;
       padding: 10px;
       font-weight: bold;
-      text-align: center;
-      border-bottom: 2px solid #222;
     }
-
     #chatBox {
       height: 200px;
       overflow-y: auto;
       padding: 10px;
-      color: white;
-      text-align: left;
       font-size: 14px;
-      background-color: #111;
+      background: #111;
     }
-
     #chatBox div {
-      margin-bottom: 8px;
+      margin-bottom: 6px;
     }
-
     #messageInput {
       width: 100%;
       padding: 10px;
+      background: #222;
+      color: white;
       border: none;
       outline: none;
-      background-color: #222;
-      color: white;
-      font-size: 14px;
-      border-top: 2px solid crimson;
     }
-
+    #deleteMessagesBtn {
+      display: none;
+      margin-top: 20px;
+      background-color: crimson;
+    }
     #usernameModal {
       position: fixed;
       top: 0; left: 0;
       width: 100vw; height: 100vh;
-      background: rgba(0, 0, 0, 0.85);
+      background: rgba(0, 0, 0, 0.95);
       display: flex;
-      align-items: center;
       justify-content: center;
+      align-items: center;
       z-index: 10000;
-      font-family: 'Georgia', serif;
     }
-
     .modalContent {
-      width: 300px;
-      background-color: #111;
+      background: #1a1a1a;
+      padding: 30px;
+      border-radius: 12px;
       border: 2px solid crimson;
-      border-radius: 10px;
-      padding: 20px;
       text-align: center;
+      width: 300px;
       box-shadow: 0 0 20px crimson;
     }
-
-    .modalContent h2 {
-      font-size: 20px;
-      color: white;
-      margin-bottom: 15px;
-    }
-
     .modalContent input {
-      padding: 10px;
       width: 90%;
-      border: 1px solid #444;
-      border-radius: 6px;
-      font-size: 14px;
+      padding: 10px;
       margin-top: 10px;
-      background-color: #222;
-      color: white;
-    }
-
-    .modalContent button {
-      margin-top: 15px;
-      padding: 8px 18px;
-      font-size: 14px;
-      background-color: crimson;
+      font-size: 16px;
+      background: #222;
       color: white;
       border: none;
       border-radius: 6px;
-      cursor: pointer;
-      transition: background-color 0.3s ease;
     }
-
-    .modalContent button:hover {
-      background-color: #c00;
+    .modalContent button {
+      margin-top: 15px;
+      background: crimson;
     }
-
     #usernameError {
       color: red;
-      margin-top: 8px;
-      font-size: 13px;
+      margin-top: 10px;
     }
   </style>
 </head>
 <body>
-  <div class="backdrop"></div>
   <h1>Jesse Clicker</h1>
-  <img id="head" src="https://i.pinimg.com/736x/26/5d/fe/265dfe8eb04c534f990d78be571c085c.jpg" alt="Jesse Pinkman"/>
+  <img id="head" src="https://i.pinimg.com/736x/26/5d/fe/265dfe8eb04c534f990d78be571c085c.jpg" />
   <div class="score">Yo Points: <span id="score">0</span></div>
-
-  <div class="upgrade">
-    <div class="upgrade-info"><button onclick="buyUpgrade(0)">Sell Heroin, 200 Yo Points</button></div>
-    <div class="upgrade-info"><button onclick="buyUpgrade(1)">Sell Crystal Meth, 200 Yo Points</button></div>
-    <div class="upgrade-info"><button onclick="buyUpgrade(2)">Sell Cocaine, 200 Yo Points</button></div>
-  </div>
-
-  <button id="resetBtn" onclick="resetGame()">Reset Game</button>
-  <button id="deleteBtn">Slet Beskeder</button>
-  <div id="notEnoughPoints">Yo, ya don't got enough Yo Points!</div>
-
-  <audio id="backgroundAudio" autoplay loop>
-    <source src="" type="audio/mp3">
-  </audio>
-  <iframe id="soundcloudPlayer" width="0" height="0" scrolling="no" frameborder="no" allow="autoplay" src=""></iframe>
 
   <div id="chatContainer">
     <div id="chatHeader">Public Chat</div>
     <div id="chatBox"></div>
-    <input id="messageInput" placeholder="Type a message..."/>
+    <input id="messageInput" placeholder="Type a message..." />
+    <button id="deleteMessagesBtn">Delete Messages</button>
   </div>
 
-  <!-- Username Modal -->
   <div id="usernameModal">
     <div class="modalContent">
-      <h2>Enter Username</h2>
-      <input type="text" id="usernameInput" placeholder="Your username..." />
-      <div>
-        <button id="confirmUsername">OK</button>
-      </div>
+      <h2>Indtast brugernavn</h2>
+      <input type="text" id="usernameInput" placeholder="Skriv navn her..." />
+      <button id="confirmUsername">OK</button>
       <div id="usernameError"></div>
     </div>
   </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+    import {
+      getFirestore,
+      collection,
+      addDoc,
+      serverTimestamp,
+      query,
+      orderBy,
+      onSnapshot,
+      getDocs,
+      doc,
+      deleteDoc,
+      setDoc
+    } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyATfxCXQlXlzDZYVJXbgaLbzSp3v9oltdk",
+      authDomain: "yomath-e3bf6.firebaseapp.com",
+      projectId: "yomath-e3bf6",
+      storageBucket: "omath-e3bf6.appspot.com",
+      messagingSenderId: "828481107544",
+      appId: "1:828481107544:web:f5d42aaa18f7ae15293c2d"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const usersRef = collection(db, "users");
+    const messagesRef = collection(db, "messages");
+
+    const chatBox = document.getElementById("chatBox");
+    const messageInput = document.getElementById("messageInput");
+    const deleteBtn = document.getElementById("deleteMessagesBtn");
+    const usernameModal = document.getElementById("usernameModal");
+    const usernameInput = document.getElementById("usernameInput");
+    const confirmBtn = document.getElementById("confirmUsername");
+    const usernameError = document.getElementById("usernameError");
+
+    let username = "";
+    const adminUsername = "WalterWhite";
+
+    confirmBtn.onclick = async () => {
+      const name = usernameInput.value.trim();
+      if (!name) return;
+
+      const taken = await getDocs(usersRef);
+      const usernames = taken.docs.map(doc => doc.id);
+
+      if (usernames.includes(name)) {
+        usernameError.textContent = "Navnet er allerede i brug.";
+        return;
+      }
+
+      username = name;
+      await setDoc(doc(db, "users", username), { joinedAt: serverTimestamp() });
+      window.addEventListener("beforeunload", () => {
+        deleteDoc(doc(db, "users", username));
+      });
+
+      usernameModal.style.display = "none";
+      if (username === adminUsername) deleteBtn.style.display = "block";
+    };
+
+    messageInput.addEventListener("keydown", async (e) => {
+      if (e.key === "Enter") {
+        const text = messageInput.value.trim();
+        if (!text) return;
+        await addDoc(messagesRef, {
+          user: username,
+          message: text,
+          timestamp: serverTimestamp()
+        });
+        messageInput.value = "";
+      }
+    });
+
+    onSnapshot(query(messagesRef, orderBy("timestamp")), (snapshot) => {
+      chatBox.innerHTML = "";
+      snapshot.forEach(doc => {
+        const msg = doc.data();
+        chatBox.innerHTML += `<div><strong>${msg.user}:</strong> ${msg.message}</div>`;
+      });
+      chatBox.scrollTop = chatBox.scrollHeight;
+    });
+
+    deleteBtn.onclick = async () => {
+      if (username !== adminUsername) return alert("Kun admin kan slette beskeder!");
+      const confirmDelete = confirm("Slet alle beskeder?");
+      if (!confirmDelete) return;
+      const snapshot = await getDocs(messagesRef);
+      for (const docSnap of snapshot.docs) {
+        await deleteDoc(doc(messagesRef, docSnap.id));
+      }
+    };
+  </script>
 </body>
 </html>
+
