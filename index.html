@@ -4,26 +4,24 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Jesse Clicker</title>
-  <link rel="icon" href="https://www.ordbogen.com/apple-touch-icon.png" type="image/x-icon" />
   <style>
     body {
       margin: 0;
-      padding: 0;
       font-family: 'Georgia', serif;
-      text-align: center;
-      background-color: #111;
+      background: black;
       color: white;
+      text-align: center;
+      overflow-x: hidden;
     }
     .backdrop {
       position: fixed;
+      width: 100%;
+      height: 100%;
       top: 0; left: 0;
-      width: 100%; height: 100%;
-      background-image: url('https://static1.srcdn.com/wordpress/wp-content/uploads/2021/10/Breaking-Bad-RV.jpg');
-      background-size: cover;
-      background-position: center;
+      background: url('https://static1.srcdn.com/wordpress/wp-content/uploads/2021/10/Breaking-Bad-RV.jpg') center/cover no-repeat;
       z-index: -1;
     }
-    h1 { font-size: 3em; text-shadow: 2px 2px 5px black; }
+    h1 { font-size: 2.5em; margin-top: 20px; }
     #head {
       width: 200px;
       cursor: pointer;
@@ -32,38 +30,39 @@
       border: 4px solid crimson;
       box-shadow: 0 0 12px red;
     }
-    .score { font-size: 24px; margin-top: 10px; }
-    .upgrade {
-      margin-top: 20px;
-    }
+    #score { font-size: 24px; margin-top: 20px; display: block; }
+
+    .upgrade { margin: 20px; }
     .upgrade button {
-      margin: 10px;
-      padding: 12px 20px;
+      padding: 12px 24px;
       font-size: 16px;
+      margin: 10px;
       background-color: #333;
       color: white;
       border: none;
-      border-radius: 5px;
+      border-radius: 6px;
       cursor: pointer;
+      transition: background-color 0.3s ease;
     }
-    .upgrade button.affordable {
-      background-color: green;
+    .upgrade button.affordable { background-color: darkgreen; }
+
+    #resetBtn {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      background: crimson;
     }
-    #deleteBtn {
-      display: none;
-      background-color: crimson;
-      margin-top: 20px;
-    }
+
     #chatContainer {
       position: fixed;
       bottom: 20px;
       right: 20px;
       width: 300px;
-      background-color: rgba(0,0,0,0.85);
+      background: #111;
       border: 2px solid crimson;
-      border-radius: 10px;
+      border-radius: 12px;
       overflow: hidden;
-      z-index: 5;
+      font-size: 14px;
     }
     #chatHeader {
       background: crimson;
@@ -71,17 +70,27 @@
       font-weight: bold;
     }
     #chatBox {
-      height: 180px;
+      height: 200px;
       overflow-y: auto;
       padding: 10px;
+      background: #000;
       text-align: left;
     }
     #messageInput {
       width: 100%;
       padding: 10px;
       border: none;
-      background-color: #222;
+      outline: none;
+      background: #222;
       color: white;
+      border-top: 2px solid crimson;
+    }
+
+    #deleteBtn {
+      display: none;
+      background: red;
+      color: white;
+      margin: 5px;
     }
 
     /* Username Modal */
@@ -89,163 +98,73 @@
       position: fixed;
       top: 0; left: 0;
       width: 100vw; height: 100vh;
-      background: rgba(0,0,0,0.9);
+      background: rgba(0,0,0,0.85);
       display: flex;
       justify-content: center;
       align-items: center;
       z-index: 1000;
     }
-    .modalContent {
-      background: #222;
-      padding: 30px;
+    #usernameModal .modalContent {
+      background: #111;
       border: 2px solid crimson;
-      border-radius: 10px;
+      padding: 30px;
+      border-radius: 12px;
       color: white;
+      width: 300px;
+      text-align: center;
     }
-    .modalContent input {
+    #usernameModal input {
+      width: 80%;
       padding: 10px;
       margin-top: 10px;
-      width: 100%;
-      background: #333;
+      background: #222;
       color: white;
       border: none;
-      border-radius: 5px;
+      border-radius: 6px;
     }
-    .modalContent button {
+    #usernameModal button {
       margin-top: 15px;
       padding: 10px 20px;
       background: crimson;
       border: none;
       color: white;
-      border-radius: 5px;
+      border-radius: 6px;
       cursor: pointer;
     }
-    .modalContent #usernameError {
-      color: red;
-      margin-top: 10px;
-    }
+    #usernameError { color: red; margin-top: 10px; }
   </style>
 </head>
 <body>
   <div class="backdrop"></div>
   <h1>Jesse Clicker</h1>
-  <img id="head" src="https://i.pinimg.com/736x/26/5d/fe/265dfe8eb04c534f990d78be571c085c.jpg" alt="Jesse Pinkman"/>
-  <div class="score">Yo Points: <span id="score">0</span></div>
+  <img id="head" src="https://i.pinimg.com/736x/26/5d/fe/265dfe8eb04c534f990d78be571c085c.jpg" />
+  <div id="score">Yo Points: 0</div>
 
   <div class="upgrade">
-    <button onclick="buyUpgrade(0)" id="upgrade0">Sell Heroin (200 Yo Points)</button>
-    <button onclick="buyUpgrade(1)" id="upgrade1">Sell Crystal Meth (200 Yo Points)</button>
-    <button onclick="buyUpgrade(2)" id="upgrade2">Sell Cocaine (200 Yo Points)</button>
+    <button id="upgrade0">Sell Heroin (Cost: 200)</button>
+    <button id="upgrade1">Sell Crystal Meth (Cost: 200)</button>
+    <button id="upgrade2">Sell Cocaine (Cost: 200)</button>
   </div>
 
-  <button id="deleteBtn" onclick="clearChat()">Delete Chat</button>
+  <button id="resetBtn">Reset Game</button>
+  <button id="deleteBtn">Delete Chat</button>
 
-  <!-- Chat -->
   <div id="chatContainer">
-    <div id="chatHeader">Public Chat</div>
+    <div id="chatHeader">Chat</div>
     <div id="chatBox"></div>
-    <input id="messageInput" placeholder="Type a message..." />
+    <input id="messageInput" placeholder="Type a message..."/>
   </div>
 
-  <!-- Modal -->
   <div id="usernameModal">
     <div class="modalContent">
       <h2>Enter your username</h2>
-      <input type="text" id="usernameInput" placeholder="Your name..." />
+      <input id="usernameInput" placeholder="Your name..." />
       <button id="confirmUsername">OK</button>
       <div id="usernameError"></div>
     </div>
   </div>
 
-  <script>
-    let score = parseFloat(localStorage.getItem("clickerScore") || 0);
-    let upgrades = JSON.parse(localStorage.getItem("clickerUpgrades")) || [
-      { cost: 200, bonus: 1 },
-      { cost: 200, bonus: 1 },
-      { cost: 200, bonus: 1 },
-    ];
-    let autoClick = parseFloat(localStorage.getItem("clickerAuto") || 0);
-
-    const scoreDisplay = document.getElementById("score");
-    const head = document.getElementById("head");
-    const upgradeButtons = [0, 1, 2].map(i => document.getElementById(`upgrade${i}`));
-    const deleteBtn = document.getElementById("deleteBtn");
-
-    let username = localStorage.getItem("username") || "";
-
-    function updateScore() {
-      scoreDisplay.textContent = Math.floor(score);
-      localStorage.setItem("clickerScore", score);
-      upgradeButtons.forEach((btn, i) => {
-        btn.textContent = `Sell ${["Heroin", "Crystal Meth", "Cocaine"][i]} (${upgrades[i].cost} Yo Points)`;
-        btn.classList.toggle("affordable", score >= upgrades[i].cost);
-      });
-    }
-
-    function buyUpgrade(i) {
-      const u = upgrades[i];
-      if (score >= u.cost) {
-        score -= u.cost;
-        autoClick += u.bonus;
-        u.cost = Math.floor(u.cost * 1.5);
-        u.bonus = Math.floor(u.bonus * 1.5);
-        saveGame();
-        updateScore();
-      }
-    }
-
-    function saveGame() {
-      localStorage.setItem("clickerScore", score);
-      localStorage.setItem("clickerAuto", autoClick);
-      localStorage.setItem("clickerUpgrades", JSON.stringify(upgrades));
-    }
-
-    function gameLoop() {
-      score += autoClick / 10;
-      updateScore();
-      setTimeout(gameLoop, 100);
-    }
-
-    head.onclick = () => {
-      score += 1;
-      updateScore();
-    };
-
-    function showUsernameModal() {
-      document.getElementById("usernameModal").style.display = "flex";
-    }
-
-    document.getElementById("confirmUsername").onclick = () => {
-      const input = document.getElementById("usernameInput").value.trim();
-      if (!input) return document.getElementById("usernameError").textContent = "Please enter a name.";
-      username = input;
-      localStorage.setItem("username", username);
-      document.getElementById("usernameModal").style.display = "none";
-      if (username === "WalterWhite") deleteBtn.style.display = "inline-block";
-    };
-
-    document.getElementById("messageInput").addEventListener("keydown", (e) => {
-      if (e.key === "Enter" && e.target.value.trim()) {
-        const chatBox = document.getElementById("chatBox");
-        const msg = `<div><strong>${username}:</strong> ${e.target.value.trim()}</div>`;
-        chatBox.innerHTML += msg;
-        chatBox.scrollTop = chatBox.scrollHeight;
-        e.target.value = "";
-      }
-    });
-
-    function clearChat() {
-      if (username === "WalterWhite") {
-        document.getElementById("chatBox").innerHTML = "";
-      }
-    }
-
-    window.onload = () => {
-      if (!username) showUsernameModal();
-      else if (username === "WalterWhite") deleteBtn.style.display = "inline-block";
-      updateScore();
-      gameLoop();
-    };
-  </script>
+  <script type="module" src="app.js"></script>
 </body>
 </html>
+
