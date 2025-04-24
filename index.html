@@ -176,6 +176,10 @@
       background-color: #111;
       text-align: left;
     }
+    #errorMsg {
+      color: red;
+      margin-top: 20px;
+    }
   </style>
 </head>
 <body>
@@ -267,12 +271,17 @@
 
     function buyUpgrade(index) {
       const u = upgrades[index];
+      const errorMsg = document.getElementById("errorMsg");
+
       if (score >= u.cost) {
         score -= u.cost;
         autoClick += u.bonus;
         u.cost = Math.floor(u.cost * 1.5);
         u.bonus = Math.floor(u.bonus * 1.5);
+        errorMsg.textContent = '';  // Clear the error message
         updateScore();
+      } else {
+        errorMsg.textContent = "Not enough Yo Points!";
       }
     }
 
