@@ -194,9 +194,15 @@
   <div class="score">Yo Points: <span id="score">0</span></div>
 
   <div class="upgrade">
-    <div class="upgrade-info"><button onclick="buyUpgrade(0)">Sell Heroin, 200 Yo Points</button></div>
-    <div class="upgrade-info"><button onclick="buyUpgrade(1)">Sell Crystal Meth, 200 Yo Points</button></div>
-    <div class="upgrade-info"><button onclick="buyUpgrade(2)">Sell Cocaine, 200 Yo Points</button></div>
+    <div class="upgrade-info">
+      <button id="upgrade1" onclick="buyUpgrade(0)">Sell Heroin, 200 Yo Points</button>
+    </div>
+    <div class="upgrade-info">
+      <button id="upgrade2" onclick="buyUpgrade(1)">Sell Crystal Meth, 200 Yo Points</button>
+    </div>
+    <div class="upgrade-info">
+      <button id="upgrade3" onclick="buyUpgrade(2)">Sell Cocaine, 200 Yo Points</button>
+    </div>
   </div>
 
   <button id="resetBtn" onclick="resetGame()">Reset Game</button>
@@ -226,18 +232,16 @@
     </div>
   </div>
 
-  <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
   <script>
     const firebaseConfig = {
-apiKey: "AIzaSyATfxCXQlXlzDZYVJXbgaLbzSp3v9oltdk",
-authDomain: "yomath-e3bf6.firebaseapp.com",
-projectId: "yomath-e3bf6",
-storageBucket: "yomath-e3bf6.firebasestorage.app",
-messagingSenderId: "828481107544",
-appId: "1:828481107544:web:f5d42aaa18f7ae15293c2d",
-measurementId: "G-DS7EDV6X1P"
-};
+      apiKey: "AIzaSyATfxCXQlXlzDZYVJXbgaLbzSp3v9oltdk",
+      authDomain: "yomath-e3bf6.firebaseapp.com",
+      projectId: "yomath-e3bf6",
+      storageBucket: "omath-e3bf6.firebasestorage.app",
+      messagingSenderId: "828481107544",
+      appId: "1:828481107544:web:f5d42aaa18f7ae15293c2d",
+      measurementId: "G-DS7EDV6X1P"
+    };
 
     const app = firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
@@ -248,7 +252,7 @@ measurementId: "G-DS7EDV6X1P"
       { name: "Crystal Meth", cost: 200, bonus: 1, increaseFactor: 1.5 },
       { name: "Cocaine", cost: 200, bonus: 1, increaseFactor: 1.5 }
     ];
-    let username;
+    let username = localStorage.getItem("chatUsername");
     const usernameInput = document.getElementById('usernameInput');
     const usernameModal = document.getElementById('usernameModal');
     const confirmUsernameButton = document.getElementById('confirmUsername');
@@ -262,16 +266,19 @@ measurementId: "G-DS7EDV6X1P"
     const deleteBtn = document.getElementById('deleteBtn');
 
     // Check if username exists, if not show the username modal
-    const usernameInStorage = localStorage.getItem('chatUsername');
-    if (!usernameInStorage) {
+    if (!username) {
       usernameModal.style.display = 'block';
     } else {
-      username = usernameInStorage;
       initializeGame();
     }
 
     confirmUsernameButton.addEventListener('click', async () => {
       username = usernameInput.value.trim();
+      if (!username) {
+        document.getElementById('usernameError').textContent = 'Username cannot be empty!';
+        return;
+      }
+
       const takenUsernames = await getTakenUsernames();
       if (takenUsernames.includes(username)) {
         document.getElementById('usernameError').textContent = 'This username is already taken!';
@@ -279,7 +286,6 @@ measurementId: "G-DS7EDV6X1P"
       }
 
       localStorage.setItem('chatUsername', username);
-      await db.collection('users').doc(username).set({ score: 0 });
       usernameModal.style.display = 'none';
       initializeGame();
     });
@@ -301,6 +307,19 @@ measurementId: "G-DS7EDV6X1P"
 
     function updateScore() {
       scoreDisplay.innerText = score;
+
+      // Enable upgrade buttons if the user has enough points
+      upgrades.forEach((upgrade, index) => {
+        const upgradeButton = document.getElementById(`upgrade${index + 1}`);
+        if (score >= upgrade.cost) {
+          upgradeButton.disabled = false;
+          upgradeButton.style.backgroundColor = 'green';
+        } else {
+          upgradeButton.disabled = true;
+          upgradeButton.style.backgroundColor = '#333';
+        }
+        upgradeButton.innerText = `${upgrade.name}, ${upgrade.cost} Yo Points`;
+      });
     }
 
     // Main click event to add Yo Points
@@ -323,47 +342,61 @@ measurementId: "G-DS7EDV6X1P"
         saveScore();
         updateScore();
       } else {
-        document.getElementById("notEnoughPoints").style.display = 'block';
-        setTimeout(() => {
-          document.getElementById("notEnoughPoints").style.display = 'none';
-        }, 3000);
+        document.getElementById("notEnoughPoints").style.display = "block";
       }
     }
 
-    // Chat functionality
-    let chatFolded = false;
+    function resetGame() {
+      if (username === "Walter White") {
+        score = 0;
+        autoClick = 0;
+        upgrades.forEach(upgrade => {
+          upgrade.cost = 200;
+        });
+        saveScore();
+        updateScore();
+      }
+    }
 
-    chatHeader.addEventListener('click', () => {
-      chatFolded = !chatFolded;
-      if (chatFolded) {
-        chatBox.style.height = '0';
-      } else {
-        chatBox.style.height = '200px';
+    function deleteMessages() {
+      if (username === "Walter White") {
+        db.collection("messages").get().then((snapshot) => {
+          snapshot.forEach(doc => {
+            doc.ref.delete();
+          });
+        });
+      }
+    }
+
+    // Chat functions
+    chatHeader.addEventListener("click", () => {
+      chatBox.style.height = chatBox.style.height === "200px" ? "400px" : "200px";
+    });
+
+    messageInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        const messageText = messageInput.value.trim();
+        if (messageText) {
+          db.collection("messages").add({
+            username,
+            message: messageText,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+          });
+          messageInput.value = '';
+        }
       }
     });
 
-    messageInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter' && messageInput.value.trim()) {
-        db.collection('messages').add({
-          username: username,
-          message: messageInput.value,
-          timestamp: firebase.firestore.FieldValue.serverTimestamp()
-        });
-        messageInput.value = '';
-      }
-    });
-
-    // Listen to Firestore messages collection
-    db.collection('messages').orderBy('timestamp')
-      .onSnapshot(snapshot => {
-        chatBox.innerHTML = '';
-        snapshot.forEach(doc => {
-          const message = doc.data();
-          const messageDiv = document.createElement('div');
-          messageDiv.textContent = `${message.username}: ${message.message}`;
-          chatBox.appendChild(messageDiv);
-        });
+    // Real-time message listener
+    db.collection('messages').orderBy('timestamp').onSnapshot(snapshot => {
+      chatBox.innerHTML = '';
+      snapshot.forEach(doc => {
+        const message = doc.data();
+        const messageDiv = document.createElement('div');
+        messageDiv.textContent = `${message.username}: ${message.message}`;
+        chatBox.appendChild(messageDiv);
       });
+    });
   </script>
 </body>
 </html>
