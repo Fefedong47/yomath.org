@@ -84,7 +84,7 @@
       border: 2px solid crimson;
       border-radius: 10px;
       overflow: hidden;
-      display: none; /* Start folded */
+      display: block; /* Make chat box visible by default */
       z-index: 10;
     }
     #chatHeader {
@@ -150,36 +150,6 @@
       color: red;
       margin-top: 10px;
     }
-    #leaderboardContainer {
-      position: fixed;
-      bottom: 20px;
-      left: 20px;
-      width: 300px;
-      background: rgba(0, 0, 0, 0.85);
-      border: 2px solid crimson;
-      border-radius: 10px;
-      overflow: hidden;
-      display: none; /* Start folded */
-    }
-    #leaderboardHeader {
-      background: crimson;
-      color: white;
-      padding: 10px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-    #leaderboardList {
-      max-height: 200px;
-      overflow-y: auto;
-      padding: 10px;
-      font-size: 14px;
-      background-color: #111;
-      text-align: left;
-    }
-    #errorMsg {
-      color: red;
-      margin-top: 20px;
-    }
   </style>
 </head>
 <body>
@@ -200,12 +170,6 @@
     <div id="chatHeader">Public Chat</div>
     <div id="chatBox"></div>
     <input id="messageInput" placeholder="Type a message..." />
-  </div>
-
-  <!-- Leaderboard -->
-  <div id="leaderboardContainer">
-    <div id="leaderboardHeader">Leaderboard</div>
-    <div id="leaderboardList"></div>
   </div>
 
   <!-- Modal -->
@@ -254,8 +218,6 @@
     const head = document.getElementById("head");
     const chatBox = document.getElementById("chatBox");
     const messageInput = document.getElementById("messageInput");
-    const leaderboardContainer = document.getElementById("leaderboardContainer");
-    const leaderboardList = document.getElementById("leaderboardList");
 
     function updateScore() {
       scoreEl.textContent = `Yo Points: ${Math.floor(score)}`;
@@ -322,8 +284,6 @@
             timestamp: serverTimestamp()
           });
           messageInput.value = "";
-          localStorage.setItem("chatUnfolded", "true");
-          document.getElementById("chatContainer").style.display = "block"; // Unfold chat
         }
       }
     });
@@ -350,7 +310,6 @@
       localStorage.setItem("username", username);
       await setDoc(doc(usersRef, username), { joinedAt: serverTimestamp() });
       document.getElementById("usernameModal").style.display = "none";
-      window.addEventListener("beforeunload", () => deleteDoc(doc(usersRef, username)));
     };
 
     window.onload = () => {
@@ -358,16 +317,7 @@
         document.getElementById("usernameModal").style.display = "none";
       }
       updateScore();
-      // Unfold chat if the user has already sent a message
-      if (localStorage.getItem("chatUnfolded") === "true") {
-        document.getElementById("chatContainer").style.display = "block";
-      }
     };
-
-    document.getElementById("leaderboardHeader").onclick = () => {
-      leaderboardContainer.style.display = leaderboardContainer.style.display === "none" ? "block" : "none";
-    };
-
   </script>
 </body>
 </html>
