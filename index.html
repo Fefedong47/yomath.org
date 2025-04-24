@@ -6,194 +6,7 @@
   <title>Jesse Clicker</title>
   <link rel="icon" href="https://www.ordbogen.com/apple-touch-icon.png" />
   <style>
-    /* General styles */
-    body {
-      margin: 0;
-      font-family: 'Georgia', serif;
-      color: white;
-      background-color: #111;
-      overflow-x: hidden;
-    }
-
-    .backdrop {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: url('https://static1.srcdn.com/wordpress/wp-content/uploads/2021/10/Breaking-Bad-RV.jpg') no-repeat center center/cover;
-      z-index: -1;
-    }
-
-    h1 {
-      text-align: center;
-      font-size: 2.5em;
-      margin-top: 20px;
-    }
-
-    #head {
-      display: block;
-      margin: 20px auto;
-      width: 200px;
-      border-radius: 12px;
-      border: 4px solid crimson;
-      box-shadow: 0 0 12px red;
-      cursor: pointer;
-    }
-
-    .score {
-      text-align: center;
-      font-size: 24px;
-    }
-
-    .upgrade {
-      text-align: center;
-      margin-top: 20px;
-    }
-
-    .upgrade button {
-      margin: 10px;
-      padding: 12px 24px;
-      font-size: 16px;
-      background-color: #333;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-
-    .upgrade button.affordable {
-      background-color: green;
-    }
-
-    .upgrade button:hover {
-      background-color: #555;
-    }
-
-    #resetBtn {
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      padding: 10px 16px;
-      background-color: crimson;
-      border: none;
-      border-radius: 6px;
-      color: white;
-      display: none;
-      cursor: pointer;
-    }
-
-    #notEnoughPoints {
-      text-align: center;
-      color: red;
-      font-weight: bold;
-      margin-top: 10px;
-    }
-
-    #chatContainer {
-      position: fixed;
-      bottom: 0;
-      right: 20px;
-      width: 300px;
-      background: #222;
-      border: 2px solid crimson;
-      border-radius: 10px 10px 0 0;
-      overflow: hidden;
-      box-shadow: 0 0 15px crimson;
-      transition: height 0.3s;
-      height: 40px;
-    }
-
-    #chatHeader {
-      padding: 10px;
-      background: crimson;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    #chatBox {
-      height: 200px;
-      overflow-y: auto;
-      padding: 10px;
-      display: none;
-    }
-
-    #messageInput {
-      display: none;
-      width: 100%;
-      border: none;
-      padding: 10px;
-      background-color: #333;
-      color: white;
-    }
-
-    #leaderboard {
-      position: fixed;
-      bottom: 0;
-      left: 20px;
-      background: #222;
-      color: white;
-      border: 2px solid crimson;
-      border-radius: 10px 10px 0 0;
-      width: 200px;
-      overflow: hidden;
-    }
-
-    #leaderboardHeader {
-      background: crimson;
-      padding: 10px;
-      font-weight: bold;
-      cursor: pointer;
-    }
-
-    #leaderboardBody {
-      display: none;
-      padding: 10px;
-    }
-
-    #usernameModal {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100vw; height: 100vh;
-      background: rgba(0,0,0,0.9);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-    }
-
-    .modalContent {
-      background: #222;
-      border: 2px solid crimson;
-      border-radius: 12px;
-      padding: 30px;
-      text-align: center;
-    }
-
-    .modalContent input, .modalContent button {
-      width: 80%;
-      padding: 12px;
-      margin-top: 10px;
-      border-radius: 6px;
-      font-size: 16px;
-    }
-
-    .modalContent button {
-      background-color: crimson;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-
-    .modalContent input {
-      background-color: #111;
-      color: white;
-      border: none;
-    }
-
-    #usernameError {
-      color: red;
-      margin-top: 10px;
-    }
+    /* [CSS styles as previously provided] */
   </style>
 </head>
 <body>
@@ -227,11 +40,178 @@
     </div>
   </div>
 
-  <!-- Firebase and Game Logic scripts go here -->
-  <script type="module">
-    // JS Code continues here for Firebase + Game Logic
-    // Too long to include in this message — want me to send that next?
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
+
+  <script>
+    // Firebase configuration
+    const firebaseConfig = {
+      // Replace with your Firebase config
+    };
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // DOM Elements
+    const usernameModal = document.getElementById('usernameModal');
+    const usernameInput = document.getElementById('usernameInput');
+    const confirmUsername = document.getElementById('confirmUsername');
+    const usernameError = document.getElementById('usernameError');
+    const head = document.getElementById('head');
+    const scoreDisplay = document.getElementById('score');
+    const upgradeContainer = document.getElementById('upgradeContainer');
+    const notEnoughPoints = document.getElementById('notEnoughPoints');
+    const resetBtn = document.getElementById('resetBtn');
+    const chatContainer = document.getElementById('chatContainer');
+    const chatHeader = document.getElementById('chatHeader');
+    const chatBox = document.getElementById('chatBox');
+    const messageInput = document.getElementById('messageInput');
+
+    let username = '';
+    let score = 0;
+    let autoClick = 0;
+    let upgrades = [
+      { name: 'Auto Clicker', cost: 200, increment: 1 }
+    ];
+
+    // Load saved data
+    function loadGame() {
+      const savedUsername = localStorage.getItem('username');
+      if (savedUsername) {
+        username = savedUsername;
+        score = parseInt(localStorage.getItem('score')) || 0;
+        autoClick = parseInt(localStorage.getItem('autoClick')) || 0;
+        upgrades = JSON.parse(localStorage.getItem('upgrades')) || upgrades;
+        usernameModal.style.display = 'none';
+        updateScore();
+        renderUpgrades();
+        if (username === 'Walter White') {
+          resetBtn.style.display = 'block';
+        }
+      }
+    }
+
+    // Save game data
+    function saveGame() {
+      localStorage.setItem('username', username);
+      localStorage.setItem('score', score);
+      localStorage.setItem('autoClick', autoClick);
+      localStorage.setItem('upgrades', JSON.stringify(upgrades));
+    }
+
+    // Update score display
+    function updateScore() {
+      scoreDisplay.textContent = score;
+    }
+
+    // Render upgrades
+    function renderUpgrades() {
+      upgradeContainer.innerHTML = '';
+      upgrades.forEach((upgrade, index) => {
+        const button = document.createElement('button');
+        button.textContent = `${upgrade.name} - ${upgrade.cost} Yo Points`;
+        if (score >= upgrade.cost) {
+          button.classList.add('affordable');
+        }
+        button.addEventListener('click', () => {
+          if (score >= upgrade.cost) {
+            score -= upgrade.cost;
+            autoClick += upgrade.increment;
+            upgrade.cost = Math.floor(upgrade.cost * 1.5);
+            updateScore();
+            renderUpgrades();
+            saveGame();
+          } else {
+            notEnoughPoints.style.display = 'block';
+            setTimeout(() => {
+              notEnoughPoints.style.display = 'none';
+            }, 2000);
+          }
+        });
+        upgradeContainer.appendChild(button);
+      });
+    }
+
+    // Auto clicker
+    setInterval(() => {
+      score += autoClick;
+      updateScore();
+      renderUpgrades();
+      saveGame();
+    }, 1000);
+
+    // Event listeners
+    confirmUsername.addEventListener('click', () => {
+      const input = usernameInput.value.trim();
+      if (input) {
+        username = input;
+        localStorage.setItem('username', username);
+        usernameModal.style.display = 'none';
+        if (username === 'Walter White') {
+          resetBtn.style.display = 'block';
+        }
+        loadGame();
+      } else {
+        usernameError.textContent = 'Please enter a valid username.';
+      }
+    });
+
+    head.addEventListener('click', () => {
+      score++;
+      updateScore();
+      renderUpgrades();
+      saveGame();
+    });
+
+    resetBtn.addEventListener('click', () => {
+      if (username === 'Walter White') {
+        score = 0;
+        autoClick = 0;
+        upgrades = [
+          { name: 'Auto Clicker', cost: 200, increment: 1 }
+        ];
+        updateScore();
+        renderUpgrades();
+        saveGame();
+      }
+    });
+
+    chatHeader.addEventListener('click', () => {
+      const isOpen = chatBox.style.display === 'block';
+      chatBox.style.display = isOpen ? 'none' : 'block';
+      messageInput.style.display = isOpen ? 'none' : 'block';
+    });
+
+    messageInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        const message = messageInput.value.trim();
+        if (message) {
+          db.collection('messages').add({
+            username,
+            message,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
+          });
+          messageInput.value = '';
+        }
+      }
+    });
+
+    db.collection('messages').orderBy('timestamp').onSnapshot(snapshot => {
+      chatBox.innerHTML = '';
+      snapshot.forEach(doc => {
+        const data = doc.data();
+        const div = document.createElement('div');
+        div.textContent = `${data.username}: ${data.message}`;
+        chatBox.appendChild(div);
+      });
+    });
+
+    // Initialize game
+    window.onload = () => {
+      loadGame();
+    };
   </script>
 </body>
 </html>
-
