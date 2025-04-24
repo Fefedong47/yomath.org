@@ -51,6 +51,11 @@
       bottom: 20px;
       left: 20px;
       background: crimson;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      cursor: pointer;
     }
 
     #chatContainer {
@@ -91,6 +96,10 @@
       background: red;
       color: white;
       margin: 5px;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
     }
 
     /* Username Modal */
@@ -164,7 +173,100 @@
     </div>
   </div>
 
-  <script type="module" src="app.js"></script>
-</body>
-</html>
+  <script>
+    let score = parseFloat(localStorage.getItem("clickerScore") || 0);
+    let upgrades = JSON.parse(localStorage.getItem("clickerUpgrades")) || [
+      { cost: 200, bonus: 1 },
+      { cost: 200, bonus: 1 },
+      { cost: 200, bonus: 1 },
+    ];
+    let autoClick = parseFloat(localStorage.getItem("clickerAuto") || 0);
+
+    const scoreDisplay = document.getElementById("score");
+    const head = document.getElementById("head");
+    const upgradeButtons = [0, 1, 2].map(i => document.getElementById(`upgrade${i}`));
+    const deleteBtn = document.getElementById("deleteBtn");
+    const resetBtn = document.getElementById("resetBtn");
+
+    let username = localStorage.getItem("username") || "";
+
+    function updateScore() {
+      scoreDisplay.textContent = "Yo Points: " + Math.floor(score);
+      localStorage.setItem("clickerScore", score);
+      upgradeButtons.forEach((btn, i) => {
+        btn.textContent = `Sell ${["Heroin", "Crystal Meth", "Cocaine"][i]} (Cost: ${upgrades[i].cost})`;
+        btn.classList.toggle("affordable", score >= upgrades[i].cost);
+      });
+    }
+
+    function buyUpgrade(i) {
+      const u = upgrades[i];
+      if (score >= u.cost) {
+        score -= u.cost;
+        autoClick += u.bonus;
+        u.cost = Math.floor(u.cost * 1.5);
+        u.bonus = Math.floor(u.bonus * 1.5);
+        saveGame();
+        updateScore();
+      }
+    }
+
+    function saveGame() {
+      localStorage.setItem("clickerScore", score);
+      localStorage.setItem("clickerAuto", autoClick);
+      localStorage.setItem("clickerUpgrades", JSON.stringify(upgrades));
+    }
+
+    function gameLoop() {
+      score += autoClick / 10;
+      updateScore();
+      setTimeout(gameLoop, 100);
+    }
+
+    head.onclick = () => {
+      score += 1;
+      updateScore();
+    };
+
+    function showUsernameModal() {
+      document.getElementById("usernameModal").style.display = "flex";
+    }
+
+    document.getElementById("confirmUsername").onclick = () => {
+      const input = document.getElementById("usernameInput").value.trim();
+      if (!input) return document.getElementById("usernameError").textContent = "Please enter a name.";
+      username = input;
+      localStorage.setItem("username", username);
+      document.getElementById("usernameModal").style.display = "none";
+      if (username === "WalterWhite") deleteBtn.style.display = "inline-block";
+    };
+
+    document.getElementById("messageInput").addEventListener("keydown", (e) => {
+      if (e.key === "Enter" && e.target.value.trim()) {
+        const chatBox = document.getElementById("chatBox");
+        const msg = `<div><strong>${username}:</strong> ${e.target.value.trim()}</div>`;
+        chatBox.innerHTML += msg;
+        chatBox.scrollTop = chatBox.scrollHeight;
+        e.target.value = "";
+      }
+    });
+
+    function clearChat() {
+      if (username === "WalterWhite") {
+        document.getElementById("chatBox").innerHTML = "";
+      }
+    }
+
+    function resetGame() {
+      localStorage.removeItem("clickerScore");
+      localStorage.removeItem("clickerAuto");
+      localStorage.removeItem("clickerUpgrades");
+      score = 0;
+      autoClick = 0;
+      upgrades = [
+        { cost: 200, bonus: 1 },
+
+::contentReference[oaicite:0]{index=0}
+ 
+
 
