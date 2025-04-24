@@ -84,8 +84,8 @@
       border: 2px solid crimson;
       border-radius: 10px;
       overflow: hidden;
-      z-index: 10;
       display: none; /* Start folded */
+      z-index: 10;
     }
     #chatHeader {
       background: crimson;
@@ -355,11 +355,6 @@
       }
     };
 
-    document.getElementById("chatHeader").onclick = () => {
-      const chatContainer = document.getElementById("chatContainer");
-      chatContainer.style.display = chatContainer.style.display === "none" ? "block" : "none";
-    };
-
     document.getElementById("leaderboardHeader").onclick = () => {
       leaderboardContainer.style.display = leaderboardContainer.style.display === "none" ? "block" : "none";
     };
@@ -367,4 +362,3 @@
   </script>
 </body>
 </html>
-
