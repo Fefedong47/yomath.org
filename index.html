@@ -84,8 +84,8 @@
       border: 2px solid crimson;
       border-radius: 10px;
       overflow: hidden;
-      display: none; /* Start folded */
       z-index: 10;
+      max-height: 200px; /* Set max height for the chat box */
     }
     #chatHeader {
       background: crimson;
@@ -95,7 +95,7 @@
       cursor: pointer;
     }
     #chatBox {
-      height: 200px;
+      height: 150px; /* Content area */
       overflow-y: auto;
       padding: 10px;
       font-size: 14px;
@@ -315,7 +315,11 @@
     };
 
     chatHeader.addEventListener("click", () => {
-      chatContainer.style.display = chatContainer.style.display === "none" ? "block" : "none";
+      if (chatContainer.style.maxHeight === "200px") {
+        chatContainer.style.maxHeight = "500px"; // Unfold the chat
+      } else {
+        chatContainer.style.maxHeight = "200px"; // Fold the chat
+      }
     });
 
     window.onload = () => {
