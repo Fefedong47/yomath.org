@@ -4,356 +4,366 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Jesse Clicker</title>
-  <link rel="icon" href="https://i.pinimg.com/originals/6d/42/70/6d4270ae8e1f88ed34e7ec42460c02f2.png" type="image/png" />
+  <link rel="icon" href="https://www.ordbogen.com/apple-touch-icon.png" type="image/x-icon" />
   <style>
     body {
       margin: 0;
       padding: 0;
+      overflow-x: hidden;
       font-family: 'Georgia', serif;
-      background: url('https://static1.srcdn.com/wordpress/wp-content/uploads/2021/10/Breaking-Bad-RV.jpg') no-repeat center center fixed;
-      background-size: cover;
-      color: white;
       text-align: center;
+      color: white;
+      position: relative;
     }
-
-    h1 { margin-top: 30px; }
-
+    .backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url('https://static1.srcdn.com/wordpress/wp-content/uploads/2021/10/Breaking-Bad-RV.jpg');
+      background-size: cover;
+      background-position: center;
+      z-index: -1;
+    }
+    h1 {
+      font-size: 2.5em;
+      margin-bottom: 20px;
+    }
     #head {
       width: 200px;
       cursor: pointer;
+      transition: transform 0.1s ease;
       border-radius: 12px;
       border: 4px solid crimson;
       box-shadow: 0 0 12px red;
     }
-
     .score {
       font-size: 22px;
-      margin: 20px;
+      margin-top: 20px;
     }
-
     .upgrade {
-      margin: 20px;
+      margin-top: 20px;
     }
-
-    .upgrade button {
+    button {
       margin: 10px;
-      padding: 10px 20px;
+      padding: 12px 24px;
       font-size: 16px;
-      border-radius: 8px;
-      border: none;
-      cursor: pointer;
       background-color: #333;
       color: white;
-    }
-
-    .upgrade button.affordable {
-      background-color: green;
-    }
-
-    .upgrade button:hover {
-      background-color: #444;
-    }
-
-    #notEnoughPoints {
-      color: red;
-      margin: 10px;
-      display: none;
-    }
-
-    #resetBtn {
-      position: fixed;
-      top: 10px;
-      right: 10px;
-      background-color: crimson;
       border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #555;
+      box-shadow: 0 0 10px #ff4c4c;
+    }
+    .upgrade-info {
+      display: inline-block;
+      margin-right: 15px;
+    }
+    #resetBtn, #deleteBtn {
+      display: none;
+      margin-top: 20px;
+      padding: 12px 24px;
+      font-size: 16px;
+      background-color: #ff4747;
       color: white;
-      padding: 10px 20px;
+      border: none;
       border-radius: 5px;
       cursor: pointer;
     }
+    #resetBtn:hover, #deleteBtn:hover {
+      background-color: #ff1a1a;
+    }
+    #notEnoughPoints {
+      display: none;
+      font-size: 30px;
+      color: #ff4747;
+      margin-top: 20px;
+      font-weight: bold;
+      text-shadow: 2px 2px 5px #000;
+    }
+    iframe { display: none; }
 
-    /* Chat Panel */
     #chatContainer {
       position: fixed;
-      right: 20px;
       bottom: 20px;
+      right: 20px;
       width: 300px;
-      background-color: rgba(0, 0, 0, 0.9);
+      background: rgba(20, 20, 20, 0.95);
       border: 2px solid crimson;
-      border-radius: 10px;
+      border-radius: 12px;
       overflow: hidden;
-      transition: height 0.3s ease;
-      height: 40px;
-    }
-
-    #chatContainer.expanded {
-      height: 300px;
+      box-shadow: 0 0 15px crimson;
+      z-index: 10;
+      font-family: 'Georgia', serif;
     }
 
     #chatHeader {
-      background-color: crimson;
+      background: crimson;
+      color: white;
       padding: 10px;
+      font-weight: bold;
+      text-align: center;
+      border-bottom: 2px solid #222;
       cursor: pointer;
     }
 
     #chatBox {
-      display: none;
       height: 200px;
       overflow-y: auto;
       padding: 10px;
+      color: white;
+      text-align: left;
       font-size: 14px;
+      background-color: #111;
     }
 
-    #chatContainer.expanded #chatBox,
-    #chatContainer.expanded #messageInput {
-      display: block;
+    #chatBox div {
+      margin-bottom: 8px;
     }
 
     #messageInput {
       width: 100%;
-      box-sizing: border-box;
       padding: 10px;
       border: none;
+      outline: none;
       background-color: #222;
       color: white;
+      font-size: 14px;
+      border-top: 2px solid crimson;
     }
 
-    /* Leaderboard Panel */
-    #leaderboard {
-      position: fixed;
-      bottom: 20px;
-      left: 20px;
-      width: 200px;
-      background-color: rgba(0, 0, 0, 0.85);
-      border: 2px solid crimson;
-      border-radius: 10px;
-      overflow: hidden;
-    }
-
-    #leaderboard h3 {
-      margin: 0;
-      padding: 10px;
-      background-color: crimson;
-      cursor: pointer;
-    }
-
-    #leaderboardList {
-      display: none;
-      padding: 10px;
-    }
-
-    /* Username modal */
+    /* Modal Styles */
     #usernameModal {
       position: fixed;
       top: 0; left: 0;
       width: 100vw; height: 100vh;
       background: rgba(0, 0, 0, 0.9);
       display: flex;
-      justify-content: center;
       align-items: center;
-      z-index: 1000;
+      justify-content: center;
+      z-index: 10000;
     }
 
-    #usernameModal .modalContent {
+    .modalContent {
       background-color: #111;
-      padding: 30px;
       border: 2px solid crimson;
-      border-radius: 10px;
+      border-radius: 12px;
+      padding: 30px;
+      text-align: center;
+      box-shadow: 0 0 20px crimson;
     }
 
-    #usernameModal input {
-      padding: 10px;
+    .modalContent input {
+      padding: 12px;
       width: 80%;
-      margin-top: 10px;
-      background: #222;
-      color: white;
       border: none;
-      border-radius: 5px;
+      border-radius: 6px;
+      font-size: 16px;
+      margin-top: 10px;
+      background-color: #222;
+      color: white;
     }
 
-    #usernameModal button {
-      margin-top: 10px;
+    .modalContent button {
+      margin-top: 15px;
       padding: 10px 20px;
-      background: crimson;
+      font-size: 16px;
+      background-color: crimson;
       color: white;
       border: none;
-      border-radius: 5px;
+      border-radius: 6px;
       cursor: pointer;
     }
 
+    #usernameError {
+      color: red;
+      margin-top: 10px;
+    }
   </style>
 </head>
 <body>
 
+  <div class="backdrop"></div>
   <h1>Jesse Clicker</h1>
-  <img id="head" src="https://i.pinimg.com/736x/26/5d/fe/265dfe8eb04c534f990d78be571c085c.jpg" />
+  <img id="head" src="https://i.pinimg.com/736x/26/5d/fe/265dfe8eb04c534f990d78be571c085c.jpg" alt="Jesse Pinkman"/>
   <div class="score">Yo Points: <span id="score">0</span></div>
 
   <div class="upgrade">
-    <button onclick="buyUpgrade(0)">Sell Heroin - <span id="cost0">200</span></button>
-    <button onclick="buyUpgrade(1)">Sell Meth - <span id="cost1">200</span></button>
+    <div class="upgrade-info"><button onclick="buyUpgrade(0)">Sell Heroin, 200 Yo Points</button></div>
+    <div class="upgrade-info"><button onclick="buyUpgrade(1)">Sell Crystal Meth, 200 Yo Points</button></div>
+    <div class="upgrade-info"><button onclick="buyUpgrade(2)">Sell Cocaine, 200 Yo Points</button></div>
   </div>
 
-  <div id="notEnoughPoints">You don't have enough Yo Points!</div>
+  <button id="resetBtn" onclick="resetGame()">Reset Game</button>
+  <button id="deleteBtn" onclick="deleteMessages()">Slet Beskeder</button>
+  <div id="notEnoughPoints">Yo, ya don't got enough Yo Points!</div>
 
-  <button id="resetBtn" onclick="resetGame()">Reset</button>
+  <audio id="backgroundAudio" autoplay loop>
+    <source src="" type="audio/mp3">
+  </audio>
+  <iframe id="soundcloudPlayer" width="0" height="0" scrolling="no" frameborder="no" allow="autoplay" src=""></iframe>
 
-  <!-- Chat -->
   <div id="chatContainer">
     <div id="chatHeader">Public Chat</div>
     <div id="chatBox"></div>
     <input id="messageInput" placeholder="Type a message..."/>
   </div>
 
-  <!-- Leaderboard -->
-  <div id="leaderboard">
-    <h3 onclick="toggleLeaderboard()">Leaderboard</h3>
-    <div id="leaderboardList">
-      <div>Coming soon...</div>
-    </div>
-  </div>
-
   <!-- Username Modal -->
-  <div id="usernameModal">
+  <div id="usernameModal" style="display: none;">
     <div class="modalContent">
-      <h2>Enter Username</h2>
-      <input id="usernameInput" />
-      <button onclick="setUsername()">OK</button>
+      <h2>Indtast dit brugernavn</h2>
+      <input type="text" id="usernameInput" placeholder="Skriv navn her..." />
+      <div>
+        <button id="confirmUsername">OK</button>
+      </div>
+      <div id="usernameError"></div>
     </div>
   </div>
 
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
-    import {
-      getFirestore, collection, addDoc, query, orderBy,
-      onSnapshot, serverTimestamp
-    } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
-
+  <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
+  <script>
     const firebaseConfig = {
-  apiKey: "AIzaSyATfxCXQlXlzDZYVJXbgaLbzSp3v9oltdk",
-  authDomain: "yomath-e3bf6.firebaseapp.com",
-  projectId: "yomath-e3bf6",
-  storageBucket: "yomath-e3bf6.firebasestorage.app",
-  messagingSenderId: "828481107544",
-  appId: "1:828481107544:web:f5d42aaa18f7ae15293c2d",
-  measurementId: "G-DS7EDV6X1P"
-    };
+apiKey: "AIzaSyATfxCXQlXlzDZYVJXbgaLbzSp3v9oltdk",
+authDomain: "yomath-e3bf6.firebaseapp.com",
+projectId: "yomath-e3bf6",
+storageBucket: "yomath-e3bf6.firebasestorage.app",
+messagingSenderId: "828481107544",
+appId: "1:828481107544:web:f5d42aaa18f7ae15293c2d",
+measurementId: "G-DS7EDV6X1P"
+};
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
 
-    let username = localStorage.getItem("username") || "";
-    const usernameModal = document.getElementById("usernameModal");
-    const input = document.getElementById("usernameInput");
-    if (!username) {
-      usernameModal.style.display = "flex";
+    let score = 0, autoClick = 0, lastTimestamp = Date.now();
+    const upgrades = [
+      { name: "Heroin", cost: 200, bonus: 1, increaseFactor: 1.5 },
+      { name: "Crystal Meth", cost: 200, bonus: 1, increaseFactor: 1.5 },
+      { name: "Cocaine", cost: 200, bonus: 1, increaseFactor: 1.5 }
+    ];
+    let username;
+    const usernameInput = document.getElementById('usernameInput');
+    const usernameModal = document.getElementById('usernameModal');
+    const confirmUsernameButton = document.getElementById('confirmUsername');
+
+    const scoreDisplay = document.getElementById("score");
+    const chatContainer = document.getElementById('chatContainer');
+    const messageInput = document.getElementById('messageInput');
+    const chatHeader = document.getElementById('chatHeader');
+    const chatBox = document.getElementById('chatBox');
+    const resetBtn = document.getElementById('resetBtn');
+    const deleteBtn = document.getElementById('deleteBtn');
+
+    // Check if username exists, if not show the username modal
+    const usernameInStorage = localStorage.getItem('chatUsername');
+    if (!usernameInStorage) {
+      usernameModal.style.display = 'block';
+    } else {
+      username = usernameInStorage;
+      initializeGame();
     }
 
-    window.setUsername = () => {
-      const val = input.value.trim();
-      if (val) {
-        username = val;
-        localStorage.setItem("username", username);
-        usernameModal.style.display = "none";
+    confirmUsernameButton.addEventListener('click', async () => {
+      username = usernameInput.value.trim();
+      const takenUsernames = await getTakenUsernames();
+      if (takenUsernames.includes(username)) {
+        document.getElementById('usernameError').textContent = 'This username is already taken!';
+        return;
       }
-    };
 
-    // Chat folding
-    const chatContainer = document.getElementById("chatContainer");
-    document.getElementById("chatHeader").addEventListener("click", () => {
-      chatContainer.classList.toggle("expanded");
+      localStorage.setItem('chatUsername', username);
+      await db.collection('users').doc(username).set({ score: 0 });
+      usernameModal.style.display = 'none';
+      initializeGame();
     });
 
-    const messageInput = document.getElementById("messageInput");
-    const chatBox = document.getElementById("chatBox");
-    const msgRef = collection(db, "messages");
-    const q = query(msgRef, orderBy("timestamp"));
+    async function getTakenUsernames() {
+      const usersSnapshot = await db.collection('users').get();
+      return usersSnapshot.docs.map(doc => doc.id);
+    }
 
-    messageInput.addEventListener("keydown", async (e) => {
-      if (e.key === "Enter" && messageInput.value.trim() && username) {
-        await addDoc(msgRef, {
-          user: username,
-          message: messageInput.value.trim(),
-          timestamp: serverTimestamp()
-        });
-        messageInput.value = "";
-      }
-    });
-
-    onSnapshot(q, (snapshot) => {
-      chatBox.innerHTML = "";
-      snapshot.forEach(doc => {
-        const msg = doc.data();
-        chatBox.innerHTML += `<div><strong>${msg.user}:</strong> ${msg.message}</div>`;
+    function initializeGame() {
+      db.collection('users').doc(username).onSnapshot(snapshot => {
+        const userData = snapshot.data();
+        if (userData && userData.score !== undefined) {
+          score = userData.score;
+          updateScore();
+        }
       });
-      chatBox.scrollTop = chatBox.scrollHeight;
-    });
-
-    // Leaderboard toggle
-    window.toggleLeaderboard = () => {
-      const list = document.getElementById("leaderboardList");
-      list.style.display = list.style.display === "block" ? "none" : "block";
-    };
-
-    // Clicker game
-    let score = parseFloat(localStorage.getItem("score")) || 0;
-    let upgrades = JSON.parse(localStorage.getItem("upgrades")) || [
-      { cost: 200, bonus: 1 },
-      { cost: 200, bonus: 1 }
-    ];
-    let autoClick = 0;
+    }
 
     function updateScore() {
-      document.getElementById("score").textContent = Math.floor(score);
-      upgrades.forEach((upg, i) => {
-        document.getElementById(`cost${i}`).textContent = upg.cost;
-        const btn = document.querySelectorAll(".upgrade button")[i];
-        btn.classList.toggle("affordable", score >= upg.cost);
-      });
+      scoreDisplay.innerText = score;
     }
 
-    window.buyUpgrade = function(i) {
-      const upg = upgrades[i];
-      if (score >= upg.cost) {
-        score -= upg.cost;
-        autoClick += upg.bonus;
-        upg.cost = Math.floor(upg.cost * 1.5);
-        upg.bonus = Math.floor(upg.bonus * 1.5);
-        localStorage.setItem("upgrades", JSON.stringify(upgrades));
-        updateScore();
-      } else {
-        document.getElementById("notEnoughPoints").style.display = "block";
-        setTimeout(() => {
-          document.getElementById("notEnoughPoints").style.display = "none";
-        }, 1500);
-      }
-    };
-
-    function tick() {
-      score += autoClick / 10;
-      localStorage.setItem("score", score);
-      updateScore();
-      requestAnimationFrame(tick);
-    }
-
-    document.getElementById("head").onclick = () => {
+    // Main click event to add Yo Points
+    document.getElementById("head").addEventListener("click", () => {
       score++;
       updateScore();
-    };
+      saveScore();
+    });
 
-    window.resetGame = () => {
-      score = 0;
-      autoClick = 0;
-      upgrades = [
-        { cost: 200, bonus: 1 },
-        { cost: 200, bonus: 1 }
-      ];
-      localStorage.clear();
-      updateScore();
-    };
+    function saveScore() {
+      db.collection('users').doc(username).set({ score: score });
+    }
 
-    updateScore();
-    tick();
+    function buyUpgrade(upgradeIndex) {
+      const upgrade = upgrades[upgradeIndex];
+      if (score >= upgrade.cost) {
+        score -= upgrade.cost;
+        autoClick += upgrade.bonus;
+        upgrade.cost = Math.floor(upgrade.cost * upgrade.increaseFactor);
+        saveScore();
+        updateScore();
+      } else {
+        document.getElementById("notEnoughPoints").style.display = 'block';
+        setTimeout(() => {
+          document.getElementById("notEnoughPoints").style.display = 'none';
+        }, 3000);
+      }
+    }
+
+    // Chat functionality
+    let chatFolded = false;
+
+    chatHeader.addEventListener('click', () => {
+      chatFolded = !chatFolded;
+      if (chatFolded) {
+        chatBox.style.height = '0';
+      } else {
+        chatBox.style.height = '200px';
+      }
+    });
+
+    messageInput.addEventListener('keypress', (e) => {
+      if (e.key === 'Enter' && messageInput.value.trim()) {
+        db.collection('messages').add({
+          username: username,
+          message: messageInput.value,
+          timestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        messageInput.value = '';
+      }
+    });
+
+    // Listen to Firestore messages collection
+    db.collection('messages').orderBy('timestamp')
+      .onSnapshot(snapshot => {
+        chatBox.innerHTML = '';
+        snapshot.forEach(doc => {
+          const message = doc.data();
+          const messageDiv = document.createElement('div');
+          messageDiv.textContent = `${message.username}: ${message.message}`;
+          chatBox.appendChild(messageDiv);
+        });
+      });
   </script>
 </body>
 </html>
