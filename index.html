@@ -314,7 +314,7 @@
           });
           messageInput.value = "";
           localStorage.setItem("chatUnfolded", "true");
-          chatContainer.style.display = "block"; // Unfold chat
+          document.getElementById("chatContainer").style.display = "block"; // Unfold chat
         }
       }
     });
@@ -351,12 +351,13 @@
       updateScore();
       // Unfold chat if the user has already sent a message
       if (localStorage.getItem("chatUnfolded") === "true") {
-        chatContainer.style.display = "block";
+        document.getElementById("chatContainer").style.display = "block";
       }
     };
 
     document.getElementById("chatHeader").onclick = () => {
-      chatBox.style.display = chatBox.style.display === "none" ? "block" : "none";
+      const chatContainer = document.getElementById("chatContainer");
+      chatContainer.style.display = chatContainer.style.display === "none" ? "block" : "none";
     };
 
     document.getElementById("leaderboardHeader").onclick = () => {
@@ -365,3 +366,4 @@
   </script>
 </body>
 </html>
+
