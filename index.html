@@ -84,7 +84,7 @@
       border: 2px solid crimson;
       border-radius: 10px;
       overflow: hidden;
-      display: block; /* Make chat box visible by default */
+      display: none; /* Start folded */
       z-index: 10;
     }
     #chatHeader {
@@ -218,6 +218,8 @@
     const head = document.getElementById("head");
     const chatBox = document.getElementById("chatBox");
     const messageInput = document.getElementById("messageInput");
+    const chatContainer = document.getElementById("chatContainer");
+    const chatHeader = document.getElementById("chatHeader");
 
     function updateScore() {
       scoreEl.textContent = `Yo Points: ${Math.floor(score)}`;
@@ -311,6 +313,10 @@
       await setDoc(doc(usersRef, username), { joinedAt: serverTimestamp() });
       document.getElementById("usernameModal").style.display = "none";
     };
+
+    chatHeader.addEventListener("click", () => {
+      chatContainer.style.display = chatContainer.style.display === "none" ? "block" : "none";
+    });
 
     window.onload = () => {
       if (username) {
