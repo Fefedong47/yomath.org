@@ -85,7 +85,8 @@
       border-radius: 10px;
       overflow: hidden;
       z-index: 10;
-      max-height: 400px; /* Start unfolded with visible chat messages */
+      max-height: 40px; /* Chat starts folded */
+      transition: max-height 0.3s ease; /* Smooth transition when unfolding */
     }
     #chatHeader {
       background: crimson;
@@ -95,12 +96,13 @@
       cursor: pointer;
     }
     #chatBox {
-      height: 350px; /* Content area */
+      height: 0; /* Hidden initially */
       overflow-y: auto;
       padding: 10px;
       font-size: 14px;
       background-color: #111;
       text-align: left;
+      display: none; /* Hidden until unfolded */
     }
     #messageInput {
       width: 100%;
@@ -110,6 +112,7 @@
       border: none;
       outline: none;
       border-top: 2px solid crimson;
+      display: none; /* Hidden until chat unfolds */
     }
     #usernameModal {
       position: fixed;
@@ -315,10 +318,14 @@
     };
 
     chatHeader.addEventListener("click", () => {
-      if (chatContainer.style.maxHeight === "400px") {
-        chatContainer.style.maxHeight = "200px"; // Fold the chat
-      } else {
+      if (chatContainer.style.maxHeight === "40px") {
         chatContainer.style.maxHeight = "400px"; // Unfold the chat to show messages
+        chatBox.style.display = "block"; // Show chat content
+        messageInput.style.display = "block"; // Show message input
+      } else {
+        chatContainer.style.maxHeight = "40px"; // Fold the chat
+        chatBox.style.display = "none"; // Hide chat content
+        messageInput.style.display = "none"; // Hide message input
       }
     });
 
