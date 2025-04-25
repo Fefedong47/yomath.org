@@ -131,9 +131,11 @@
       color: red;
       margin-top: 10px;
     }
+
   </style>
 </head>
 <body>
+  <!-- Username Modal -->
   <div id="usernameModal">
     <div class="modalContent">
       <h2>Enter your username</h2>
@@ -158,15 +160,33 @@
   </div>
 
   <div id="leaderboard">
-    <div id="leaderboardHeader">Leaderboard (Coming soon...)</div>
+    <div id="leaderboardHeader">Leaderboard</div>
+    <ul id="leaderboardList"></ul>
   </div>
 
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js"></script>
+
   <script>
+    // Firebase Configuration
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_AUTH_DOMAIN",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_STORAGE_BUCKET",
+      messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+      appId: "YOUR_APP_ID"
+    };
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    // DOM Elements
     const usernameModal = document.getElementById('usernameModal');
     const usernameInput = document.getElementById('usernameInput');
     const confirmUsername = document.getElementById('confirmUsername');
     const usernameError = document.getElementById('usernameError');
-
     const head = document.getElementById('head');
     const scoreDisplay = document.getElementById('score');
     const upgradeContainer = document.getElementById('upgradeContainer');
@@ -175,110 +195,21 @@
     const chatHeader = document.getElementById('chatHeader');
     const chatBox = document.getElementById('chatBox');
     const messageInput = document.getElementById('messageInput');
+    const leaderboardList = document.getElementById('leaderboardList');
 
+    // Game Variables
     let username = '';
     let score = 0;
     let autoClick = 0;
     let upgrades = [{ name: 'Auto Clicker', cost: 100, increment: 1 }];
 
+    // Update Score Display
     function updateScore() {
       scoreDisplay.textContent = score;
     }
 
+    // Render Upgrades
     function renderUpgrades() {
       upgradeContainer.innerHTML = '';
-      upgrades.forEach((upgrade, i) => {
-        const btn = document.createElement('button');
-        btn.textContent = `${upgrade.name} - ${upgrade.cost} Yo Points`;
-        if (score >= upgrade.cost) {
-          btn.classList.add('affordable');
-        }
-        btn.onclick = () => {
-          if (score >= upgrade.cost) {
-            score -= upgrade.cost;
-            autoClick += upgrade.increment;
-            upgrade.cost = Math.floor(upgrade.cost * 1.5);
-            updateScore();
-            renderUpgrades();
-            saveGame();
-          } else {
-            notEnoughPoints.style.display = 'block';
-            setTimeout(() => notEnoughPoints.style.display = 'none', 2000);
-          }
-        };
-        upgradeContainer.appendChild(btn);
-      });
-    }
-
-    function saveGame() {
-      localStorage.setItem('score', score);
-      localStorage.setItem('username', username);
-      localStorage.setItem('autoClick', autoClick);
-      localStorage.setItem('upgrades', JSON.stringify(upgrades));
-    }
-
-    function loadGame() {
-      const savedUsername = localStorage.getItem('username');
-      if (savedUsername) {
-        username = savedUsername;
-        score = parseInt(localStorage.getItem('score')) || 0;
-        autoClick = parseInt(localStorage.getItem('autoClick')) || 0;
-        upgrades = JSON.parse(localStorage.getItem('upgrades')) || upgrades;
-        usernameModal.style.display = 'none';
-        updateScore();
-        renderUpgrades();
-        if (username === 'Walter White') {
-          resetBtn.style.display = 'block';
-        }
-      }
-    }
-
-    confirmUsername.onclick = () => {
-      const input = usernameInput.value.trim();
-      if (!input) {
-        usernameError.textContent = 'Please enter a username.';
-        return;
-      }
-      username = input;
-      localStorage.setItem('username', username);
-      usernameModal.style.display = 'none';
-      loadGame();
-    };
-
-    head.onclick = () => {
-      score++;
-      updateScore();
-      renderUpgrades();
-      saveGame();
-    };
-
-    resetBtn.onclick = () => {
-      if (username === 'Walter White') {
-        score = 0;
-        autoClick = 0;
-        upgrades = [{ name: 'Auto Clicker', cost: 100, increment: 1 }];
-        updateScore();
-        renderUpgrades();
-        saveGame();
-      }
-    };
-
-    chatHeader.onclick = () => {
-      const open = chatBox.style.display === 'block';
-      chatBox.style.display = open ? 'none' : 'block';
-      messageInput.style.display = open ? 'none' : 'block';
-    };
-
-    setInterval(() => {
-      score += autoClick;
-      updateScore();
-      renderUpgrades();
-      saveGame();
-    }, 1000);
-
-    window.onload = () => {
-      loadGame();
-    };
-  </script>
-</body>
-</html>
+      upgrades.forEach((upgrade) => {
+        const btn = document.createElement
