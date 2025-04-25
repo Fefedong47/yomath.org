@@ -8,7 +8,8 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background-color: #222;
+      background: url('https://i.pinimg.com/originals/f1/f6/90/f1f6902f40f2a99f3489317e1f1a7f94.jpg') no-repeat center center fixed;
+      background-size: cover;
       color: white;
       text-align: center;
       margin: 0;
@@ -63,10 +64,9 @@
       position: absolute;
       bottom: 10px;
       left: 10px;
-      background: #333;
-      width: 250px;
+      background: rgba(0, 0, 0, 0.7);
+      width: 300px;
       border-radius: 8px;
-      overflow: hidden;
     }
 
     #chatHeader {
@@ -96,7 +96,7 @@
       position: absolute;
       bottom: 10px;
       right: 10px;
-      background: #333;
+      background: rgba(0, 0, 0, 0.7);
       width: 250px;
       border-radius: 8px;
     }
@@ -131,7 +131,6 @@
       color: red;
       margin-top: 10px;
     }
-
   </style>
 </head>
 <body>
@@ -162,7 +161,25 @@
     <div id="leaderboardHeader">Leaderboard (Coming soon...)</div>
   </div>
 
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.15.0/firebase-firestore-compat.js"></script>
+
   <script>
+    // ✅ Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyATfxCXQlXlzDZYVJXbgaLbzSp3v9oltdk",
+      authDomain: "yomath-e3bf6.firebaseapp.com",
+      projectId: "yomath-e3bf6",
+      storageBucket: "yomath-e3bf6.firebasestorage.app",
+      messagingSenderId: "828481107544",
+      appId: "1:828481107544:web:f5d42aaa18f7ae15293c2d",
+      measurementId: "G-DS7EDV6X1P"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
     const usernameModal = document.getElementById('usernameModal');
     const usernameInput = document.getElementById('usernameInput');
     const confirmUsername = document.getElementById('confirmUsername');
@@ -180,7 +197,11 @@
     let username = '';
     let score = 0;
     let autoClick = 0;
-    let upgrades = [{ name: 'Auto Clicker', cost: 100, increment: 1 }];
+    let upgrades = [
+      { name: 'Auto Clicker', cost: 100, increment: 1 },
+      { name: 'Super Clicker', cost: 500, increment: 5 },
+      { name: 'Mega Clicker', cost: 2000, increment: 20 }
+    ];
 
     function updateScore() {
       scoreDisplay.textContent = score;
@@ -230,6 +251,7 @@
         updateScore();
         renderUpgrades();
         if (username === 'Walter White') resetBtn.style.display = 'block';
+        listenToMessages();
       }
     }
 
@@ -255,7 +277,11 @@
       if (username === 'Walter White') {
         score = 0;
         autoClick = 0;
-        upgrades = [{ name: 'Auto Clicker', cost: 100, increment: 1 }];
+        upgrades = [
+          { name: 'Auto Clicker', cost: 100, increment: 1 },
+          { name: 'Super Clicker', cost: 500, increment: 5 },
+          { name: 'Mega Clicker', cost: 2000, increment: 20 }
+        ];
         updateScore();
         renderUpgrades();
         saveGame();
@@ -268,15 +294,29 @@
       messageInput.style.display = open ? 'none' : 'block';
     };
 
-    messageInput.addEventListener('keypress', (e) => {
-      if (e.key === 'Enter') {
-        const msg = document.createElement('div');
-        msg.textContent = `${username}: ${messageInput.value}`;
-        chatBox.appendChild(msg);
-        chatBox.scrollTop = chatBox.scrollHeight;
+    messageInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && messageInput.value.trim()) {
+        db.collection('messages').add({
+          user: username,
+          text: messageInput.value.trim(),
+          timestamp: Date.now()
+        });
         messageInput.value = '';
       }
     });
+
+    function listenToMessages() {
+      db.collection('messages').orderBy('timestamp', 'asc').onSnapshot(snapshot => {
+        chatBox.innerHTML = '';
+        snapshot.forEach(doc => {
+          const msg = doc.data();
+          const div = document.createElement('div');
+          div.textContent = `${msg.user}: ${msg.text}`;
+          chatBox.appendChild(div);
+        });
+        chatBox.scrollTop = chatBox.scrollHeight;
+      });
+    }
 
     setInterval(() => {
       score += autoClick;
@@ -285,9 +325,8 @@
       saveGame();
     }, 1000);
 
-    window.onload = () => {
-      loadGame();
-    };
+    window.onload = loadGame;
   </script>
 </body>
 </html>
+
