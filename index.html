@@ -72,7 +72,6 @@
       cursor: pointer;
     }
 
-    /* Chat Panel */
     #chatContainer {
       position: fixed;
       right: 20px;
@@ -119,7 +118,6 @@
       color: white;
     }
 
-    /* Leaderboard Panel */
     #leaderboard {
       position: fixed;
       bottom: 20px;
@@ -143,20 +141,15 @@
       padding: 10px;
     }
 
-    /* Username modal */
     #usernameModal {
       position: fixed;
       top: 0; left: 0;
       width: 100vw; height: 100vh;
       background: rgba(0, 0, 0, 0.9);
-      display: none;
+      display: flex;
       justify-content: center;
       align-items: center;
       z-index: 1000;
-    }
-
-    #usernameModal.show {
-      display: flex;
     }
 
     #usernameModal .modalContent {
@@ -164,6 +157,7 @@
       padding: 30px;
       border: 2px solid crimson;
       border-radius: 10px;
+      text-align: center;
     }
 
     #usernameModal input {
@@ -185,6 +179,17 @@
       border-radius: 5px;
       cursor: pointer;
     }
+
+    #deleteMessagesBtn {
+      display: none;
+      background-color: crimson;
+      color: white;
+      padding: 10px 20px;
+      margin-top: 10px;
+      cursor: pointer;
+      border-radius: 5px;
+      border: none;
+    }
   </style>
 </head>
 <body>
@@ -194,12 +199,13 @@
   <div class="score">Yo Points: <span id="score">0</span></div>
 
   <div class="upgrade">
-    <button onclick="buyUpgrade(0)">Sell Heroin - <span id="cost0"></span></button>
-    <button onclick="buyUpgrade(1)">Sell Meth - <span id="cost1"></span></button>
-    <button onclick="buyUpgrade(2)">Sell Cocaine - <span id="cost2"></span></button>
+    <button onclick="buyUpgrade(0)">Sell Heroin - <span id="cost0">200</span></button>
+    <button onclick="buyUpgrade(1)">Sell Meth - <span id="cost1">200</span></button>
+    <button onclick="buyUpgrade(2)">Sell Cocaine - <span id="cost2">200</span></button>
   </div>
 
   <div id="notEnoughPoints">Yo Ya Don't Have Enough Yo Points!</div>
+
   <button id="resetBtn" onclick="resetGame()">Reset</button>
 
   <div id="chatContainer">
@@ -210,9 +216,7 @@
 
   <div id="leaderboard">
     <h3 onclick="toggleLeaderboard()">Leaderboard</h3>
-    <div id="leaderboardList">
-      <div>Coming soon...</div>
-    </div>
+    <div id="leaderboardList"><div>Coming soon...</div></div>
   </div>
 
   <div id="usernameModal">
@@ -222,6 +226,8 @@
       <button onclick="setUsername()">OK</button>
     </div>
   </div>
+
+  <button id="deleteMessagesBtn" onclick="deleteMessages()">Delete All Messages</button>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
@@ -239,121 +245,146 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    let username = localStorage.getItem("username") || "";
-    const usernameModal = document.getElementById("usernameModal");
-    const input = document.getElementById("usernameInput");
+    document.addEventListener("DOMContentLoaded", function() {
+      let username = localStorage.getItem("username") || "";
+      const usernameModal = document.getElementById("usernameModal");
+      const input = document.getElementById("usernameInput");
 
-    if (!username) {
-      usernameModal.classList.add("show");
-    }
+      // If username exists, hide modal
+      if (username) {
+        usernameModal.style.display = "none";
+      } else {
+        usernameModal.style.display = "flex"; // Show modal if no username
+      }
 
-    window.setUsername = () => {
-      const val = input.value.trim();
-      if (val) {
+      window.setUsername = () => {
+        const val = input.value.trim();
+        const registered = JSON.parse(localStorage.getItem("registeredUsernames")) || [];
+
+        if (!val) return;
+
+        if (registered.includes(val)) {
+          alert("Username is already taken. Please choose another one.");
+          return;
+        }
+
         username = val;
         localStorage.setItem("username", username);
-        usernameModal.classList.remove("show");
-      }
-    };
+        registered.push(val);
+        localStorage.setItem("registeredUsernames", JSON.stringify(registered));
+        usernameModal.style.display = "none";
+        
+        // Check if the user is Walter White (admin)
+        if (username === "Walter White (Admin)") {
+          document.getElementById("deleteMessagesBtn").style.display = "block";
+        }
+      };
 
-    document.getElementById("chatHeader").addEventListener("click", () => {
-      document.getElementById("chatContainer").classList.toggle("expanded");
-    });
+      window.deleteMessages = () => {
+        const chatBox = document.getElementById("chatBox");
+        chatBox.innerHTML = "";
+      };
 
-    const messageInput = document.getElementById("messageInput");
-    const chatBox = document.getElementById("chatBox");
-    const msgRef = collection(db, "messages");
-    const q = query(msgRef, orderBy("timestamp"));
+      const chatContainer = document.getElementById("chatContainer");
+      document.getElementById("chatHeader").addEventListener("click", () => {
+        chatContainer.classList.toggle("expanded");
+      });
 
-    messageInput.addEventListener("keydown", async (e) => {
-      if (e.key === "Enter" && messageInput.value.trim() && username) {
-        await addDoc(msgRef, {
-          user: username,
-          message: messageInput.value.trim(),
-          timestamp: serverTimestamp()
+      const messageInput = document.getElementById("messageInput");
+      const chatBox = document.getElementById("chatBox");
+      const msgRef = collection(db, "messages");
+      const q = query(msgRef, orderBy("timestamp"));
+
+      messageInput.addEventListener("keydown", async (e) => {
+        if (e.key === "Enter" && messageInput.value.trim() && username) {
+          await addDoc(msgRef, {
+            user: username,
+            message: messageInput.value.trim(),
+            timestamp: serverTimestamp()
+          });
+          messageInput.value = "";
+        }
+      });
+
+      onSnapshot(q, (snapshot) => {
+        chatBox.innerHTML = "";
+        snapshot.forEach(doc => {
+          const msg = doc.data();
+          chatBox.innerHTML += `<div><strong>${msg.user}:</strong> ${msg.message}</div>`;
         });
-        messageInput.value = "";
-      }
-    });
-
-    onSnapshot(q, (snapshot) => {
-      chatBox.innerHTML = "";
-      snapshot.forEach(doc => {
-        const msg = doc.data();
-        chatBox.innerHTML += `<div><strong>${msg.user}:</strong> ${msg.message}</div>`;
+        chatBox.scrollTop = chatBox.scrollHeight;
       });
-      chatBox.scrollTop = chatBox.scrollHeight;
-    });
 
-    window.toggleLeaderboard = () => {
-      const list = document.getElementById("leaderboardList");
-      list.style.display = list.style.display === "block" ? "none" : "block";
-    };
+      window.toggleLeaderboard = () => {
+        const list = document.getElementById("leaderboardList");
+        list.style.display = list.style.display === "block" ? "none" : "block";
+      };
 
-    let score = parseFloat(localStorage.getItem("score")) || 0;
-    let upgrades = JSON.parse(localStorage.getItem("upgrades")) || [
-      { cost: 200, bonus: 1 },
-      { cost: 200, bonus: 1 },
-      { cost: 200, bonus: 1 }
-    ];
-    let autoClick = 0;
-
-    upgrades.forEach(upg => {
-      autoClick += upg.bonus;
-    });
-
-    function updateScore() {
-      document.getElementById("score").textContent = Math.floor(score);
-      upgrades.forEach((upg, i) => {
-        const costElem = document.getElementById(`cost${i}`);
-        const btn = document.querySelectorAll(".upgrade button")[i];
-        if (costElem) costElem.textContent = upg.cost;
-        if (btn) btn.classList.toggle("affordable", score >= upg.cost);
-      });
-    }
-
-    window.buyUpgrade = function(i) {
-      const upg = upgrades[i];
-      if (score >= upg.cost) {
-        score -= upg.cost;
-        autoClick += upg.bonus;
-        upg.cost = Math.floor(upg.cost * 1.5);
-        upg.bonus = Math.floor(upg.bonus * 1.5);
-        localStorage.setItem("upgrades", JSON.stringify(upgrades));
-        updateScore();
-      } else {
-        const msg = document.getElementById("notEnoughPoints");
-        msg.style.display = "block";
-        setTimeout(() => msg.style.display = "none", 800);
-      }
-    };
-
-    function tick() {
-      score += autoClick / 10;
-      localStorage.setItem("score", score);
-      updateScore();
-      requestAnimationFrame(tick);
-    }
-
-    document.getElementById("head").onclick = () => {
-      score++;
-      updateScore();
-    };
-
-    window.resetGame = () => {
-      score = 0;
-      autoClick = 0;
-      upgrades = [
+      let score = parseFloat(localStorage.getItem("score")) || 0;
+      let upgrades = JSON.parse(localStorage.getItem("upgrades")) || [
         { cost: 200, bonus: 1 },
         { cost: 200, bonus: 1 },
         { cost: 200, bonus: 1 }
       ];
-      localStorage.clear();
-      updateScore();
-    };
+      let autoClick = parseFloat(localStorage.getItem("autoClick")) || 0;
 
-    updateScore();
-    tick();
+      function updateScore() {
+        document.getElementById("score").textContent = Math.floor(score);
+        upgrades.forEach((upg, i) => {
+          document.getElementById(`cost${i}`).textContent = upg.cost;
+          const btn = document.querySelectorAll(".upgrade button")[i];
+          btn.classList.toggle("affordable", score >= upg.cost);
+        });
+      }
+
+      window.buyUpgrade = function(i) {
+        const upg = upgrades[i];
+        if (score >= upg.cost) {
+          score -= upg.cost;
+          autoClick = autoClick === 0 ? upg.bonus : autoClick * 2;
+          upg.cost = Math.floor(upg.cost * 1.5);
+          upg.bonus = Math.floor(upg.bonus * 2);
+          localStorage.setItem("autoClick", autoClick);
+          localStorage.setItem("upgrades", JSON.stringify(upgrades));
+          updateScore();
+        } else {
+          document.getElementById("notEnoughPoints").style.display = "block";
+          setTimeout(() => {
+            document.getElementById("notEnoughPoints").style.display = "none";
+          }, 500);
+        }
+      };
+
+      function tick() {
+        score += autoClick / 10;
+        localStorage.setItem("score", score);
+        updateScore();
+        requestAnimationFrame(tick);
+      }
+
+      document.getElementById("head").onclick = () => {
+        score++;
+        updateScore();
+      };
+
+      window.resetGame = () => {
+        score = 0;
+        autoClick = 0;
+        upgrades = [
+          { cost: 200, bonus: 1 },
+          { cost: 200, bonus: 1 },
+          { cost: 200, bonus: 1 }
+        ];
+        localStorage.setItem("score", score);
+        localStorage.setItem("autoClick", autoClick);
+        localStorage.setItem("upgrades", JSON.stringify(upgrades));
+        // Avoid resetting the username
+        updateScore();
+      };
+
+      updateScore();
+      tick();
+    });
   </script>
 </body>
 </html>
